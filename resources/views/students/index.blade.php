@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Danh sách Sinh viên</title>
+    <!-- Tải Tailwind CSS từ CDN để tạo giao diện nhanh chóng -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tải font Inter từ Google Fonts cho đẹp hơn -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -23,16 +25,15 @@
         <!-- Form Bộ lọc: Gửi dữ liệu bằng phương thức GET đến route 'students.index' -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-8">
             <form action="{{ route('students.index') }}" method="GET">
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 items-end">
+                {{-- Cập nhật grid layout thành 5 cột cho màn hình lớn --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 items-end">
                     
                     <!-- Lọc theo Khoa -->
                     <div>
                         <label for="faculty-filter" class="block text-sm font-medium text-gray-700 mb-1">Khoa</label>
                         <select name="faculty_id" id="faculty-filter" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
                             <option value="">Tất cả Khoa</option>
-                            {{-- Vòng lặp @foreach để hiển thị danh sách các khoa --}}
                             @foreach ($faculties as $faculty)
-                                {{-- Giữ lại giá trị đã chọn sau khi lọc --}}
                                 <option value="{{ $faculty->id }}" {{ ($filters['faculty_id'] ?? '') == $faculty->id ? 'selected' : '' }}>
                                     {{ $faculty->faculty_name }}
                                 </option>
@@ -40,22 +41,9 @@
                         </select>
                     </div>
 
-                    <!-- Lọc theo Ngành -->
-                    <div>
-                        <label for="major-filter" class="block text-sm font-medium text-gray-700 mb-1">Ngành</label>
-                        <select name="major_id" id="major-filter" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Tất cả Ngành</option>
-                            @foreach ($majors as $major)
-                                <option value="{{ $major->id }}" {{ ($filters['major_id'] ?? '') == $major->id ? 'selected' : '' }}>
-                                    {{ $major->major_name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
                     <!-- Lọc theo Khóa -->
                     <div>
-                        <label for="course-filter" class="block text-sm font-medium text-gray-700 mb-1">Khóa</label>
+                        <label for="course-filter" class="block text-sm font-medium text-gray-700 mb-1">Khóa học</label>
                         <select name="course_year" id="course-filter" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
                             <option value="">Tất cả Khóa</option>
                             @foreach($courses as $course)
@@ -82,12 +70,12 @@
                     <!-- Lọc theo Tình trạng học -->
                     <div>
                         <label for="status-filter" class="block text-sm font-medium text-gray-700 mb-1">Tình trạng</label>
-                        <select name="status" id="status-filter" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <select name="academic_status" id="status-filter" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
                             <option value="">Tất cả</option>
-                            <option value="Đang học" {{ ($filters['status'] ?? '') == 'Đang học' ? 'selected' : '' }}>Đang học</option>
-                            <option value="Bảo lưu" {{ ($filters['status'] ?? '') == 'Bảo lưu' ? 'selected' : '' }}>Bảo lưu</option>
-                            <option value="Tốt nghiệp" {{ ($filters['status'] ?? '') == 'Tốt nghiệp' ? 'selected' : '' }}>Tốt nghiệp</option>
-                            <option value="Thôi học" {{ ($filters['status'] ?? '') == 'Thôi học' ? 'selected' : '' }}>Thôi học</option>
+                            <option value="Đang học" {{ ($filters['academic_status'] ?? '') == 'Đang học' ? 'selected' : '' }}>Đang học</option>
+                            <option value="Bảo lưu" {{ ($filters['academic_status'] ?? '') == 'Bảo lưu' ? 'selected' : '' }}>Bảo lưu</option>
+                            <option value="Tốt nghiệp" {{ ($filters['academic_status'] ?? '') == 'Tốt nghiệp' ? 'selected' : '' }}>Tốt nghiệp</option>
+                            <option value="Thôi học" {{ ($filters['academic_status'] ?? '') == 'Thôi học' ? 'selected' : '' }}>Thôi học</option>
                         </select>
                     </div>
 
@@ -114,18 +102,14 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        {{-- Vòng lặp @forelse để duyệt qua danh sách sinh viên. Nếu danh sách rỗng, khối @empty sẽ được thực thi. --}}
                         @forelse ($students as $student)
                             <tr class="hover:bg-gray-50">
-                                {{-- Hiển thị số thứ tự, có tính toán dựa trên trang hiện tại --}}
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $loop->iteration + $students->firstItem() - 1 }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $student->student_code }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">{{ $student->full_name }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ \Carbon\Carbon::parse($student->dob)->format('d/m/Y') }}</td>
-                                {{-- Hiển thị tên lớp qua quan hệ. '?? 'N/A'' để tránh lỗi nếu không có lớp --}}
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $student->class->class_name ?? 'N/A' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                    {{-- Dùng @if để thay đổi màu sắc dựa trên tình trạng học --}}
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                         @if($student->status == 'Đang học') bg-green-100 text-green-800
                                         @elseif($student->status == 'Bảo lưu') bg-yellow-100 text-yellow-800
@@ -152,5 +136,90 @@
         </footer>
     </div>
 
+    {{-- SCRIPT MỚI: Xử lý bộ lọc động cho Lớp học --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Lấy các element của dropdown
+            const facultyFilter = document.getElementById('faculty-filter');
+            const courseFilter = document.getElementById('course-filter');
+            const classFilter = document.getElementById('class-filter');
+            
+            // Lưu trữ danh sách lớp ban đầu để có thể khôi phục khi không có bộ lọc nào được chọn
+            const originalClassOptionsHTML = classFilter.innerHTML;
+
+            // Hàm để cập nhật danh sách các lớp
+            function updateClassOptions() {
+                const facultyId = facultyFilter.value;
+                const courseYear = courseFilter.value;
+
+                // Nếu cả hai bộ lọc đều trống, khôi phục lại danh sách lớp đầy đủ
+                if (!facultyId && !courseYear) {
+                    classFilter.innerHTML = originalClassOptionsHTML;
+                    return;
+                }
+
+                // Xây dựng URL để gọi API lấy danh sách lớp đã lọc
+                const params = new URLSearchParams();
+                if (facultyId) {
+                    params.append('faculty_id', facultyId);
+                }
+                if (courseYear) {
+                    params.append('course_year', courseYear);
+                }
+                
+                // Sử dụng route đã đặt tên để tạo URL
+                const url = `{{ route('api.get_classes') }}?${params.toString()}`;
+
+                // Gọi API bằng fetch
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(classes => {
+                        // Lưu lại giá trị lớp đang được chọn (nếu có)
+                        const selectedClassId = classFilter.value;
+                        
+                        // Xóa các lựa chọn hiện tại và thêm lại lựa chọn mặc định "Tất cả Lớp"
+                        classFilter.innerHTML = '<option value="">Tất cả Lớp</option>';
+
+                        let isSelectedClassStillAvailable = false;
+
+                        // Thêm các lớp đã được lọc vào dropdown
+                        classes.forEach(cls => {
+                            const option = document.createElement('option');
+                            option.value = cls.id;
+                            option.textContent = cls.class_name;
+                            
+                            // Nếu lớp này đang được chọn trước đó, giữ lại lựa chọn
+                            if (cls.id == selectedClassId) {
+                                option.selected = true;
+                                isSelectedClassStillAvailable = true;
+                            }
+                            classFilter.appendChild(option);
+                        });
+                        
+                        // Nếu lớp đã chọn trước đó không còn trong danh sách mới, bỏ lựa chọn đó
+                        if (!isSelectedClassStillAvailable) {
+                            classFilter.value = "";
+                        }
+                    })
+                    .catch(error => console.error('Lỗi khi tải danh sách lớp:', error));
+            }
+
+            // Gắn sự kiện 'change' cho bộ lọc Khoa và Khóa học
+            facultyFilter.addEventListener('change', updateClassOptions);
+            courseFilter.addEventListener('change', updateClassOptions);
+        });
+    </script>
+
 </body>
 </html>
+
+
+
+
+
+
