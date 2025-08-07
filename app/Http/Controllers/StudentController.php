@@ -5,7 +5,10 @@ use Illuminate\Http\Request;
 use App\Models\Student;
 use App\Models\Faculty;
 use App\Models\ClassModel;
+use App\Models\Province; // Giả sử bạn đã tạo Model cho Tỉnh
+use App\Models\Ward;     // Giả sử bạn đã tạo Model cho Xã/Phường
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class StudentController extends Controller
 {
@@ -92,4 +95,66 @@ class StudentController extends Controller
         // Trả về kết quả dưới dạng JSON
         return response()->json($classes);
     }
+
+     /**
+     * THÊM PHƯƠNG THỨC NÀY: Hiển thị form để chỉnh sửa thông tin sinh viên.
+     * Laravel sẽ tự động tìm sinh viên dựa trên {student} (mã SV) trong URL.
+     */
+    public function edit(Student $student)
+    {
+        $classes = ClassModel::orderBy('class_name')->get();
+        // Lấy danh sách tỉnh/thành phố để điền vào dropdown
+        $provinces = DB::table('116_provinces')->orderBy('name')->get();
+
+        return view('students.edit', compact('student', 'classes', 'provinces'));
+    }
+
+    /**
+     * Cập nhật thông tin sinh viên trong CSDL.
+     */
+    public function update(Request $request, Student $student)
+    {
+        // Xác thực dữ liệu đầu vào với đầy đủ các trường
+        $validatedData = $request->validate([
+            'full_name' => 'required|string|max:100',
+            'gender' => 'nullable|in:Nam,Nữ,Khác',
+            'dob' => 'required|date',
+            'citizen_id_card' => ['required', 'string', 'max:12', Rule::unique('116_students')->ignore($student->student_code, 'student_code')],
+            'email' => ['nullable', 'email', 'max:100', Rule::unique('116_students')->ignore($student->student_code, 'student_code')],
+            'phone' => 'nullable|string|max:15',
+            'class_id' => 'required|exists:116_classes,id',
+            'status' => 'required|in:Đang học,Bảo lưu,Tốt nghiệp,Thôi học',
+            'province_code' => 'nullable|exists:116_provinces,code',
+            'ward_code' => 'nullable|exists:116_wards,code',
+            'address_detail' => 'nullable|string',
+            'old_address_detail' => 'nullable|string',
+            'bank_account' => 'nullable|string|max:30',
+            'bank_name' => 'nullable|string|max:100',
+            'bank_branch' => 'nullable|string|max:100',
+        ]);
+
+        // Cập nhật thông tin sinh viên
+        $student->update($validatedData);
+
+        // Chuyển hướng về trang danh sách với thông báo thành công
+        return redirect()->route('students.index')->with('success', 'Cập nhật thông tin sinh viên thành công!');
+    }
+
+    /**
+     * PHƯƠNG THỨC MỚI: Lấy danh sách xã/phường dựa trên mã tỉnh.
+     */
+    public function getWards(Request $request)
+    {
+        $wards = DB::table('116_wards')
+                    ->where('province_code', $request->province_code)
+                    ->orderBy('name')
+                    ->get();
+        return response()->json($wards);
+    }
+
+
+
+
+
+
 }

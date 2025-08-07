@@ -1,32 +1,39 @@
 <?php
 
 namespace App\Models;
-
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
+     * Chỉ định tên bảng mà model này sẽ tương tác.
      *
-     * @var list<string>
+     * @var string
+     */
+    protected $table = '116_users';
+
+    /**
+     * Các thuộc tính có thể được gán hàng loạt.
+     *
+     * @var array<int, string>
      */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'role', // Thêm 'role' vào đây
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Các thuộc tính nên được ẩn khi serialize.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -34,15 +41,11 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Các thuộc tính nên được cast về kiểu dữ liệu gốc.
      *
-     * @return array<string, string>
+     * @var array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
 }

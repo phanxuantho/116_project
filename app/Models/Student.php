@@ -14,6 +14,31 @@ class Student extends Model
 
     // Vì `student_code` không phải là số tự tăng
     public $incrementing = false;
+    /**
+     * Các thuộc tính có thể được gán hàng loạt (mass assignable).
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'full_name',
+        'gender',
+        'dob',
+        'citizen_id_card',
+        'email',
+        'phone',
+        'class_id',
+        'status',
+        'province_code',
+        'ward_code',
+        'address_detail',
+        'old_address_detail',
+        'bank_account',
+        'bank_name',
+        'bank_branch',
+    ];
+
+
+
 
     // Một Sinh viên (Student) thuộc về một Lớp (ClassModel)
     public function class() {
