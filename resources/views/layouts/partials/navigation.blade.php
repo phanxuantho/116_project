@@ -55,6 +55,7 @@
                             </svg>
                         </button>
                         <div x-show="open" x-transition class="absolute mt-16 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 z-50">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo rà soát hàng tháng</a>
                             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo họp định kì</a>
                             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo các địa phương</a>
                             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo Bộ GDĐT</a>

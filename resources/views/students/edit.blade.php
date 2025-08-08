@@ -99,6 +99,18 @@
                                         <option value="Thôi học" {{ old('status', $student->status) == 'Thôi học' ? 'selected' : '' }}>Thôi học</option>
                                     </select>
                                 </div>
+                                    {{-- CẬP NHẬT: Thêm trường Trạng thái nhận hỗ trợ --}}
+                                <div>
+                                    <label for="funding_status" class="block font-medium text-sm text-gray-700">Trạng thái nhận hỗ trợ</label>
+                                    <select id="funding_status" name="funding_status" class="block p-2 w-full border border-gray-300 rounded-md shadow-sm" required>
+                                        <option value="Đang nhận" {{ old('funding_status', $student->funding_status) == 'Đang nhận' ? 'selected' : '' }}>Đang nhận</option>
+                                        <option value="Tạm dừng nhận" {{ old('funding_status', $student->funding_status) == 'Tạm dừng nhận' ? 'selected' : '' }}>Tạm dừng nhận</option>
+                                        <option value="Thôi nhận" {{ old('funding_status', $student->funding_status) == 'Thôi nhận' ? 'selected' : '' }}>Thôi nhận</option>
+                                    </select>
+                                </div>
+
+
+
                             </div>
 
                             <!-- Địa chỉ -->

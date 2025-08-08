@@ -28,6 +28,7 @@ class Student extends Model
         'phone',
         'class_id',
         'status',
+        'funding_status', // <-- THÊM DÒNG NÀY
         'province_code',
         'ward_code',
         'address_detail',

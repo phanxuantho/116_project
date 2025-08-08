@@ -124,6 +124,7 @@ class StudentController extends Controller
             'phone' => 'nullable|string|max:15',
             'class_id' => 'required|exists:116_classes,id',
             'status' => 'required|in:Đang học,Bảo lưu,Tốt nghiệp,Thôi học',
+            'funding_status' => 'required|in:Đang nhận,Tạm dừng nhận,Thôi nhận', // <-- THÊM DÒNG NÀY
             'province_code' => 'nullable|exists:116_provinces,code',
             'ward_code' => 'nullable|exists:116_wards,code',
             'address_detail' => 'nullable|string',

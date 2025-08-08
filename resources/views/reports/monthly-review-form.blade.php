@@ -9,12 +9,30 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 md:p-8 text-gray-900">
+                    
+                    {{-- Hiển thị lỗi validation từ server --}}
+                    @if ($errors->any())
+                        <div class="mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4" role="alert">
+                            <p class="font-bold">Không thể thực hiện. Vui lòng kiểm tra lại:</p>
+                            <ul class="mt-2 list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    {{-- Khối hiển thị lỗi từ JavaScript --}}
+                    <div id="form-errors" class="hidden mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4" role="alert">
+                        {{-- Nội dung lỗi sẽ được JS chèn vào đây --}}
+                    </div>
+
                     <form id="review-form">
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <!-- Tháng -->
                             <div>
                                 <label for="month" class="block font-medium text-sm text-gray-700">Tháng</label>
-                                <input id="month" name="month" type="number" min="1" max="12" value="{{ date('m') }}" required class="block mt-1 w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <input id="month" name="month" type="number" min="1" max="12" value="{{ (int) date('m') }}" required class="block mt-1 w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             </div>
 
                             <!-- Học kỳ -->
@@ -74,6 +92,7 @@
             const printButton = document.getElementById('print-button');
             const exportButton = document.getElementById('export-button');
             const allClassOptions = Array.from(classSelect.options);
+            const errorDiv = document.getElementById('form-errors');
 
             facultySelect.addEventListener('change', function() {
                 const selectedFacultyId = this.value;
@@ -87,17 +106,48 @@
                 });
             });
             
+            // Hàm kiểm tra form trước khi gửi
+            function validateForm() {
+                errorDiv.classList.add('hidden'); // Ẩn thông báo lỗi cũ
+                let isValid = true;
+                let errorMessages = [];
+                
+                form.querySelectorAll('[required]').forEach(field => {
+                    field.classList.remove('border-red-500'); // Xóa viền đỏ cũ
+                    if (!field.value.trim()) {
+                        isValid = false;
+                        field.classList.add('border-red-500'); // Thêm viền đỏ cho trường bị lỗi
+                        const label = document.querySelector(`label[for="${field.id}"]`);
+                        const fieldName = label ? label.textContent : field.name;
+                        errorMessages.push(`Vui lòng điền vào trường "${fieldName}".`);
+                    }
+                });
+
+                if (!isValid) {
+                    // Hiển thị thông báo lỗi cụ thể
+                    errorDiv.innerHTML = '<p class="font-bold">Không thể thực hiện. Vui lòng kiểm tra lại:</p><ul class="mt-2 list-disc list-inside">' 
+                                       + [...new Set(errorMessages)].map(msg => `<li>${msg}</li>`).join('') 
+                                       + '</ul>';
+                    errorDiv.classList.remove('hidden');
+                }
+                return isValid;
+            }
+
             exportButton.addEventListener('click', function() {
-                form.method = 'GET';
-                form.action = '{{ route("reports.monthly-review.export") }}';
-                form.submit();
+                if (validateForm()) {
+                    form.method = 'GET';
+                    form.action = '{{ route("reports.monthly-review.export") }}';
+                    form.submit();
+                }
             });
 
             printButton.addEventListener('click', function() {
-                const formData = new FormData(form);
-                const params = new URLSearchParams(formData).toString();
-                const printUrl = `{{ route('reports.monthly-review.print') }}?${params}`;
-                window.open(printUrl, '_blank');
+                if (validateForm()) {
+                    const formData = new FormData(form);
+                    const params = new URLSearchParams(formData).toString();
+                    const printUrl = `{{ route('reports.monthly-review.print') }}?${params}`;
+                    window.open(printUrl, '_blank');
+                }
             });
         });
     </script>
