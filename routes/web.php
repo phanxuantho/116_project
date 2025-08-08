@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -56,11 +57,11 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Nhóm route cho Báo cáo
-    Route::prefix('reports')->name('reports.')->group(function () {
-        // Route::get('/periodic', [ReportController::class, 'periodic'])->name('periodic'); // Báo cáo định kì
-        // Route::get('/local', [ReportController::class, 'local'])->name('local'); // Báo cáo địa phương
-        // Route::get('/moet', [ReportController::class, 'moet'])->name('moet'); // Báo cáo Bộ GDĐT
-        // Route::get('/overview', [ReportController::class, 'overview'])->name('overview'); // Báo cáo tổng quan
+    Route::prefix('reports')->name('reports.')->middleware('auth')->group(function () {
+        // Routes cho chức năng Rà soát danh sách hàng tháng
+        Route::get('/monthly-review', [ReportController::class, 'showMonthlyReviewForm'])->name('monthly-review.form');
+        Route::get('/monthly-review/export', [ReportController::class, 'exportMonthlyReview'])->name('monthly-review.export');
+        Route::get('/monthly-review/print', [ReportController::class, 'printMonthlyReview'])->name('monthly-review.print');
     });
 
 
