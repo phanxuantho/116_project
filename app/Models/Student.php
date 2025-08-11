@@ -38,7 +38,14 @@ class Student extends Model
         'bank_branch',
     ];
 
-
+        /**
+     * THÊM MỚI: Định nghĩa mối quan hệ để lấy lịch sử log.
+     */
+    public function statusLogs()
+    {
+        // Một sinh viên có nhiều bản ghi log, sắp xếp theo ngày tạo mới nhất
+        return $this->hasMany(StudentStatusLog::class, 'student_code', 'student_code')->latest();
+    }
 
 
     // Một Sinh viên (Student) thuộc về một Lớp (ClassModel)

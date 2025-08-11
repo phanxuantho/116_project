@@ -13,7 +13,8 @@
             <!-- Form Bộ lọc -->
             <div class="bg-white p-6 rounded-xl shadow-sm mb-8">
                 <form action="{{ route('students.index') }}" method="GET">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 items-end">
+                    {{-- CẬP NHẬT: Chuyển layout sang 6 cột --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 items-end">
                         
                         <!-- Lọc theo Khoa -->
                         <div>
@@ -65,11 +66,17 @@
                                 <option value="Thôi học" {{ ($filters['academic_status'] ?? '') == 'Thôi học' ? 'selected' : '' }}>Thôi học</option>
                             </select>
                         </div>
-
-                        <!-- Nút Lọc -->
-                        <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-lg font-semibold hover:bg-blue-700 transition duration-300 shadow-sm">
-                            Lọc
-                        </button>
+                        
+                        {{-- THÊM MỚI: Ô tìm kiếm --}}
+                        <div class="lg:col-span-2">
+                            <label for="search-filter" class="block text-sm font-medium text-gray-700 mb-1">Tìm kiếm</label>
+                            <div class="flex">
+                                <input type="text" name="search" id="search-filter" class="w-full p-2 border border-gray-300 rounded-l-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Nhập tên hoặc MSSV..." value="{{ $filters['search'] ?? '' }}">
+                                <button type="submit" class="bg-blue-600 text-white p-2 rounded-r-lg font-semibold hover:bg-blue-700 transition duration-300 shadow-sm flex-shrink-0">
+                                    Lọc
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>

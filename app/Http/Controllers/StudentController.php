@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Student;
 use App\Models\Faculty;
+use App\Models\StudentStatusLog; // Thêm dòng này
+use Illuminate\Support\Facades\Auth; // Thêm dòng này
 use App\Models\ClassModel;
 use App\Models\Province; // Giả sử bạn đã tạo Model cho Tỉnh
 use App\Models\Ward;     // Giả sử bạn đã tạo Model cho Xã/Phường
@@ -19,7 +21,14 @@ class StudentController extends Controller
         // with('class.major.faculty') thực hiện "eager loading" để tải trước các mối quan hệ,
         // giúp tránh vấn đề N+1 query và tăng hiệu suất.
         $query = Student::query()->with('class.major.faculty');
-
+        // THÊM MỚI: Xử lý tìm kiếm
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('full_name', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhere('student_code', 'LIKE', '%' . $searchTerm . '%');
+            });
+        }
         // Lọc theo Khoa
         if ($request->filled('faculty_id')) {
             $query->whereHas('class.faculty', function ($q) use ($request) {
@@ -102,11 +111,18 @@ class StudentController extends Controller
      */
     public function edit(Student $student)
     {
+        // Tải trước mối quan hệ statusLogs cùng với thông tin người dùng (user) đã thay đổi
+        $student->load('statusLogs.user');
         $classes = ClassModel::orderBy('class_name')->get();
         // Lấy danh sách tỉnh/thành phố để điền vào dropdown
         $provinces = DB::table('116_provinces')->orderBy('name')->get();
+        // Lấy chuỗi query từ URL của trang danh sách (trang trước đó)
+        $previousUrlQuery = parse_url(url()->previous(), PHP_URL_QUERY);
+        return view('students.edit', compact('student', 'classes', 'provinces', 'previousUrlQuery'));
 
-        return view('students.edit', compact('student', 'classes', 'provinces'));
+
+
+
     }
 
     /**
@@ -114,7 +130,11 @@ class StudentController extends Controller
      */
     public function update(Request $request, Student $student)
     {
-        // Xác thực dữ liệu đầu vào với đầy đủ các trường
+        // Lấy trạng thái cũ TRƯỚC KHI cập nhật
+        $oldStatus = $student->status;
+        $oldFundingStatus = $student->funding_status;
+
+        // Xác thực dữ liệu đầu vào
         $validatedData = $request->validate([
             'full_name' => 'required|string|max:100',
             'gender' => 'nullable|in:Nam,Nữ,Khác',
@@ -124,7 +144,7 @@ class StudentController extends Controller
             'phone' => 'nullable|string|max:15',
             'class_id' => 'required|exists:116_classes,id',
             'status' => 'required|in:Đang học,Bảo lưu,Tốt nghiệp,Thôi học',
-            'funding_status' => 'required|in:Đang nhận,Tạm dừng nhận,Thôi nhận', // <-- THÊM DÒNG NÀY
+            'funding_status' => 'required|in:Đang nhận,Tạm dừng nhận,Thôi nhận',
             'province_code' => 'nullable|exists:116_provinces,code',
             'ward_code' => 'nullable|exists:116_wards,code',
             'address_detail' => 'nullable|string',
@@ -132,13 +152,56 @@ class StudentController extends Controller
             'bank_account' => 'nullable|string|max:30',
             'bank_name' => 'nullable|string|max:100',
             'bank_branch' => 'nullable|string|max:100',
+            // Validation cho các trường log
+            'note' => 'nullable|string',
+            'evidence' => 'nullable|string|max:150',
+            'evidence_date' => 'nullable|date',
+            'evidence_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048', // Giới hạn file 2MB
         ]);
 
         // Cập nhật thông tin sinh viên
         $student->update($validatedData);
 
-        // Chuyển hướng về trang danh sách với thông báo thành công
-        return redirect()->route('students.index')->with('success', 'Cập nhật thông tin sinh viên thành công!');
+        // Kiểm tra xem trạng thái có thay đổi không
+        if ($oldStatus !== $request->status || $oldFundingStatus !== $request->funding_status) {
+            $filePath = null;
+            // Xử lý upload file minh chứng nếu có
+            // Xử lý upload và đổi tên file minh chứng nếu có
+            if ($request->hasFile('evidence_file')) {
+                $file = $request->file('evidence_file');
+                // Lấy tên gốc của file
+                $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                // Lấy đuôi file
+                $extension = $file->getClientOriginalExtension();
+                // Tạo timestamp
+                $timestamp = now()->format('Ymd_His');
+                // Tạo tên file mới theo định dạng yêu cầu
+                $newFileName = $student->student_code . '_' . $timestamp . '_' . \Str::slug($originalName) . '.' . $extension;
+                
+                // Lưu file với tên mới vào thư mục `storage/app/public/evidence_files`
+                $filePath = $file->storeAs('evidence_files', $newFileName, 'public');
+            }
+
+            // Tạo bản ghi log
+            StudentStatusLog::create([
+                'student_code' => $student->student_code,
+                'user_id' => Auth::id(), // Lấy ID của người dùng đang đăng nhập
+                'status_old' => $oldStatus,
+                'status_new' => $request->status,
+                'funding_status_old' => $oldFundingStatus,
+                'funding_status_new' => $request->funding_status,
+                'note' => $request->note,
+                'evidence' => $request->evidence,
+                'evidence_date' => $request->evidence_date,
+                'evidence_file_path' => $filePath,
+            ]);
+        }
+       // Xây dựng URL chuyển hướng có kèm theo các tham số lọc cũ
+       $redirectUrl = route('students.index');
+       if ($request->filled('previous_url_query')) {
+           $redirectUrl .= '?' . $request->previous_url_query;
+       }
+       return redirect($redirectUrl)->with('success', 'Cập nhật thông tin sinh viên thành công!');
     }
 
     /**
