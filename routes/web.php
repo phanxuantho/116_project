@@ -62,6 +62,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/monthly-review', [ReportController::class, 'showMonthlyReviewForm'])->name('monthly-review.form');
         Route::get('/monthly-review/export', [ReportController::class, 'exportMonthlyReview'])->name('monthly-review.export');
         Route::get('/monthly-review/print', [ReportController::class, 'printMonthlyReview'])->name('monthly-review.print');
+        // THÊM ROUTE MỚI CHO CHỨC NĂNG IN TẤT CẢ
+        Route::get('/monthly-review/print-all', [ReportController::class, 'printAllMonthlyReview'])->name('monthly-review.print-all');
+        
+        
+        // THÊM 2 ROUTE báo cáo tổng quan
+        Route::get('/overview', [ReportController::class, 'showOverviewForm'])->name('overview.form');
+        Route::get('/overview/export', [ReportController::class, 'exportOverview'])->name('overview.export');
+        Route::get('/overview/print', [ReportController::class, 'printOverview'])->name('overview.print');
+    
     });
 
 

@@ -5,11 +5,16 @@ use Illuminate\Http\Request;
 use App\Models\Faculty;
 use App\Models\ClassModel;
 use App\Models\Student;
+use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Style\Font;
+use PhpOffice\PhpSpreadsheet\Style\Color;
+
+
 
 class ReportController extends Controller
 {
@@ -131,7 +136,7 @@ class ReportController extends Controller
     }
 
     /**
-     * Chuẩn bị dữ liệu và hiển thị trang in.
+     * Chuẩn bị dữ liệu và hiển thị trang in cho MỘT lớp.
      */
     public function printMonthlyReview(Request $request)
     {
@@ -152,6 +157,202 @@ class ReportController extends Controller
         ];
 
         return view('prints.monthly-student-review', $data);
+    }
+
+ /**
+     * THÊM MỚI: Chuẩn bị dữ liệu và hiển thị trang in cho TẤT CẢ các lớp.
+     */
+    public function printAllMonthlyReview(Request $request)
+    {
+        $request->validate([
+            'month' => 'required|integer|min:1|max:12',
+            'semester' => 'required|string|max:50',
+            'school_year' => 'required|string|max:50',
+        ]);
+
+        // Lấy tất cả các lớp có sinh viên đang học
+        $classes = ClassModel::whereHas('students', function ($query) {
+            $query->where('status', 'Đang học');
+        })
+        ->with(['faculty', 'students' => function ($query) {
+            $query->where('status', 'Đang học')->orderBy('full_name');
+        }])
+        ->orderBy('faculty_id')->orderBy('class_name')->get();
+
+        $data = [
+            'classes' => $classes,
+            'month' => $request->month,
+            'semester' => $request->semester,
+            'school_year' => $request->school_year,
+        ];
+
+        return view('prints.monthly-student-review-all', $data);
+    }
+
+    /**
+     * THÊM MỚI: Hiển thị form cho báo cáo tổng quan.
+     */
+    public function showOverviewForm()
+    {
+        return view('reports.overview-form');
+    }
+
+    /**
+     * THÊM MỚI: Xử lý logic và xuất file Excel báo cáo tổng quan.
+     */
+    public function exportOverview(Request $request)
+    {
+        $request->validate(['statistic_time' => 'required|string|max:100']);
+
+        $faculties = Faculty::with(['classes.students'])->orderBy('faculty_name')->get();
+        $studentStats = $this->getStudentStats();
+        $courseTotals = $this->getCourseTotals();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // --- Thiết lập Header ---
+        $sheet->mergeCells('A1:C1')->setCellValue('A1', 'TRƯỜNG ĐẠI HỌC TÂY NGUYÊN');
+        $sheet->mergeCells('D1:I1')->setCellValue('D1', 'CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM');
+        $sheet->mergeCells('A2:C2')->setCellValue('A2', 'PHÒNG CÔNG TÁC SINH VIÊN');
+        $sheet->mergeCells('D2:I2')->setCellValue('D2', 'Độc lập - Tự do - Hạnh phúc');
+        $sheet->getStyle('A1:I2')->getFont()->setBold(true);
+        $sheet->getStyle('D1:D2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        $sheet->mergeCells('A4:I4')->setCellValue('A4', 'BẢNG TỔNG HỢP THEO DÕI TÌNH HÌNH SINH VIÊN NHẬN 116');
+        $sheet->getStyle('A4')->getFont()->setSize(14)->setBold(true);
+        $sheet->getStyle('A4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        
+        $sheet->mergeCells('A6:I6')->setCellValue('A6', 'Thời gian thống kê: ' . $request->statistic_time);
+        $sheet->getStyle('A6')->getFont()->setItalic(true);
+
+        // --- Tiêu đề bảng ---
+        $headers = ['TT', 'Mã lớp', 'Tên lớp', 'Tổng số nhập học', 'Tổng số đăng ký nhận', 'Dừng cấp', 'Tạm dừng cấp', 'Đang cấp', 'Ghi chú'];
+        $sheet->fromArray($headers, NULL, 'A8');
+        $sheet->getStyle('A8:I8')->getFont()->setBold(true);
+        $sheet->getStyle('A8:I8')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setWrapText(true);
+
+        $currentRow = 9;
+
+        foreach ($faculties as $faculty) {
+            $sheet->mergeCells("A{$currentRow}:I{$currentRow}")->setCellValue("A{$currentRow}", 'Khoa: ' . $faculty->faculty_name);
+            $sheet->getStyle("A{$currentRow}")->getFont()->setBold(true);
+            $currentRow++;
+
+            $classesByCourse = $faculty->classes->groupBy('course_year');
+
+            foreach ($classesByCourse as $courseYear => $classes) {
+                $sheet->mergeCells("B{$currentRow}:I{$currentRow}")->setCellValue("B{$currentRow}", 'Khóa: ' . $courseYear);
+                $sheet->getStyle("B{$currentRow}")->getFont()->setItalic(true);
+                $currentRow++;
+                
+                $stt = 1;
+                foreach ($classes as $class) {
+                    $stats = $studentStats->get($class->id);
+                    $sheet->setCellValue('A' . $currentRow, $stt++);
+                    $sheet->setCellValue('B' . $currentRow, $class->class_code);
+                    $sheet->setCellValue('C' . $currentRow, $class->class_name);
+                    $sheet->setCellValue('D' . $currentRow, $stats->total_enrolled ?? 0);
+                    $sheet->setCellValue('E' . $currentRow, $stats->total_registered ?? 0);
+                    $sheet->setCellValue('F' . $currentRow, $stats->total_stopped ?? 0);
+                    $sheet->setCellValue('G' . $currentRow, $stats->total_paused ?? 0);
+                    $sheet->setCellValue('H' . $currentRow, $stats->total_receiving ?? 0);
+                    $currentRow++;
+                }
+            }
+            $currentRow++; // Dòng trống
+        }
+
+        // --- Phần tổng kết cuối báo cáo ---
+        $currentRow++; // Dòng trống
+        foreach($courseTotals as $courseData) {
+            $sheet->mergeCells("A{$currentRow}:E{$currentRow}")->setCellValue("A{$currentRow}", 'Tổng cộng khóa ' . $courseData->course_year . ':');
+            $sheet->setCellValue('F' . $currentRow, $courseData->total_stopped);
+            $sheet->setCellValue('G' . $currentRow, $courseData->total_paused);
+            $sheet->setCellValue('H' . $currentRow, $courseData->total_receiving);
+            $currentRow++;
+        }
+
+        // Dòng tổng cộng toàn trường
+        $sheet->mergeCells("A{$currentRow}:E{$currentRow}")->setCellValue("A{$currentRow}", 'Tổng cộng toàn trường:');
+        $sheet->setCellValue('F' . $currentRow, $courseTotals->sum('total_stopped'));
+        $sheet->setCellValue('G' . $currentRow, $courseTotals->sum('total_paused'));
+        $sheet->setCellValue('H' . $currentRow, $courseTotals->sum('total_receiving'));
+        $sheet->getStyle("A{$currentRow}:I{$currentRow}")->getFont()->setBold(true);
+        $currentRow += 2; // Thêm khoảng cách
+
+        // Phần ký tên
+        $sheet->mergeCells("A{$currentRow}:C{$currentRow}")->setCellValue("A{$currentRow}", 'NGƯỜI LẬP BIỂU');
+        $sheet->mergeCells("G{$currentRow}:I{$currentRow}")->setCellValue("G{$currentRow}", 'TRƯỞNG PHÒNG');
+        $sheet->getStyle("A{$currentRow}:I{$currentRow}")->getFont()->setBold(true);
+        $sheet->getStyle("A{$currentRow}:I{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // --- Định dạng và Xuất file ---
+        $sheet->getColumnDimension('C')->setWidth(35);
+        foreach (range('D', 'I') as $columnID) {
+            $sheet->getColumnDimension($columnID)->setWidth(15);
+        }
+        
+        $fileName = 'Bao-cao-tong-quan-sinh-vien-116.xlsx';
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, $fileName);
+    }
+    
+    /**
+     * THÊM MỚI: Chuẩn bị dữ liệu và hiển thị trang in cho báo cáo tổng quan.
+     */
+
+    public function printOverview(Request $request)
+    {
+        $request->validate(['statistic_time' => 'required|string|max:100']);
+
+        $faculties = Faculty::with(['classes.students'])->orderBy('faculty_name')->get();
+        $studentStats = $this->getStudentStats();
+        $courseTotals = $this->getCourseTotals();
+
+        return view('prints.overview-report', [
+            'faculties' => $faculties,
+            'studentStats' => $studentStats,
+            'courseTotals' => $courseTotals,
+            'statistic_time' => $request->statistic_time
+        ]);
+    }
+
+    /**
+     * Hàm private để lấy dữ liệu thống kê sinh viên, tái sử dụng cho cả in và xuất excel.
+     */
+    private function getStudentStats()
+    {
+        return Student::select(
+            'class_id',
+            DB::raw('COUNT(*) as total_enrolled'),
+            DB::raw("SUM(CASE WHEN funding_status IS NOT NULL THEN 1 ELSE 0 END) as total_registered"),
+            DB::raw("SUM(CASE WHEN funding_status = 'Thôi nhận' THEN 1 ELSE 0 END) as total_stopped"),
+            DB::raw("SUM(CASE WHEN funding_status = 'Tạm dừng nhận' THEN 1 ELSE 0 END) as total_paused"),
+            DB::raw("SUM(CASE WHEN funding_status = 'Đang nhận' THEN 1 ELSE 0 END) as total_receiving")
+        )
+        ->groupBy('class_id')
+        ->get()
+        ->keyBy('class_id');
+    }
+
+    /**
+     * Hàm private để lấy dữ liệu tổng kết theo khóa.
+     */
+    private function getCourseTotals()
+    {
+        return Student::join('116_classes', '116_students.class_id', '=', '116_classes.id')
+            ->select(
+                '116_classes.course_year',
+                DB::raw('SUM(CASE WHEN funding_status = "Thôi nhận" THEN 1 ELSE 0 END) as total_stopped'),
+                DB::raw('SUM(CASE WHEN funding_status = "Tạm dừng nhận" THEN 1 ELSE 0 END) as total_paused'),
+                DB::raw('SUM(CASE WHEN funding_status = "Đang nhận" THEN 1 ELSE 0 END) as total_receiving')
+            )
+            ->groupBy('116_classes.course_year')
+            ->orderBy('116_classes.course_year')
+            ->get();
     }
 }
 

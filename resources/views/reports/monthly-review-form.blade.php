@@ -71,6 +71,9 @@
                         </div>
 
                         <div class="flex items-center justify-end mt-8 space-x-4">
+                            <button type="button" id="print-all-button" class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700">
+                                In Tất Cả
+                            </button>
                             <button type="button" id="print-button" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                                 In
                             </button>
@@ -93,6 +96,9 @@
             const exportButton = document.getElementById('export-button');
             const allClassOptions = Array.from(classSelect.options);
             const errorDiv = document.getElementById('form-errors');
+            const printAllButton = document.getElementById('print-all-button'); // Nút mới
+
+
 
             facultySelect.addEventListener('change', function() {
                 const selectedFacultyId = this.value;
@@ -149,6 +155,22 @@
                     window.open(printUrl, '_blank');
                 }
             });
+             // THÊM MỚI: Xử lý sự kiện cho nút "In Tất Cả"
+             printAllButton.addEventListener('click', function() {
+                // Chỉ cần validate các trường chung
+                // (Code validate form có thể được tái sử dụng ở đây)
+                const formData = new FormData(form);
+                const params = new URLSearchParams();
+                params.append('month', formData.get('month'));
+                params.append('semester', formData.get('semester'));
+                params.append('school_year', formData.get('school_year'));
+                
+                const printUrl = `{{ route('reports.monthly-review.print-all') }}?${params.toString()}`;
+                window.open(printUrl, '_blank');
+            });           
+
+
+
         });
     </script>
 </x-app-layout>

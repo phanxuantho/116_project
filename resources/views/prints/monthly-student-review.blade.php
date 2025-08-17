@@ -15,6 +15,11 @@
         table.data { width: 100%; border-collapse: collapse; }
         table.data th, table.data td { border: 1px solid black; padding: 5px; text-align: left; }
         table.data th { text-align: center; font-weight: bold; }
+        .footer-content { margin-top: 10px; }
+        .footer-table { width: 100%; text-align: center; margin-top: 10px; }
+        .footer-table td { font-weight: bold; }
+        .note-section { text-align: left; }
+        .note-section p { margin: 4px 0; }
         @media print {
             @page { size: A4 landscape; margin: 20mm; }
             body { -webkit-print-color-adjust: exact; }
@@ -27,7 +32,7 @@
         <div class="header">
             <table>
                 <tr>
-                    <td style="text-align: center;">TRƯỜNG ĐẠI HỌC TÂY NGUYÊN<br>KHOA {{ strtoupper($facultyName) }}</td>
+                    <td style="text-align: center;">TRƯỜNG ĐẠI HỌC TÂY NGUYÊN<br>{{ strtoupper($facultyName) }}</td>
                     <td style="text-align: center;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM<br>Độc lập - Tự do - Hạnh phúc</td>
                 </tr>
             </table>
@@ -51,7 +56,7 @@
                     <th rowspan="2">Ngân hàng</th>
                     <th rowspan="2">Số tài khoản</th>
                     <th colspan="2">Học kỳ {{ $semester }}<br>Năm học {{ $school_year }}</th>
-                    <th rowspan="2">Ký tên</th>
+                    <th rowspan="2" style="width: 15%;">Ký tên</th>
                     <th rowspan="2">Ghi chú</th>
                 </tr>
                 <tr>
@@ -77,8 +82,25 @@
                 @endforeach
             </tbody>
         </table>
-        <div class="footer" style="margin-top: 20px;">
-            <p>Danh sách gồm {{ count($students) }} sinh viên.</p>
+        {{-- Phần chân trang --}}
+        <div class="footer-content">
+        <p>Danh sách gồm {{ count($students) }} sinh viên.</p>
+        <div class="note-section">
+                <p><strong><u>Lưu ý:</u></strong> Phần (*) sinh viên tích ✔ vào ô tiếp tục nhận hoặc dừng nhận.</p>
+                <p>Sinh viên kiểm tra kỹ thông tin và chịu trách nhiệm về các thông tin của mình sau đó ký tên.</p>
+                <p>Danh sách gồm có: ........................ Sinh viên</p>
+                <p>Tổng số sinh viên đang theo học: ........................ Sinh viên</p>
+                <p>Tổng số sinh viên đang nghỉ học: ........................ Sinh viên</p>
+                <p>Tổng số sinh viên đang tạm dừng học: ........................ Sinh viên</p>
+                <p>Tổng số sinh viên nhập học lại sau bảo lưu: ........................ Sinh viên</p>
+        </div>
+            <table class="footer-table">
+                <tr>
+                    <td>LỚP TRƯỞNG</td>
+                    <td>CỐ VẤN HỌC TẬP</td>
+                    <td>TRƯỞNG KHOA</td>
+                </tr>
+            </table>
         </div>
     </div>
 </body>
