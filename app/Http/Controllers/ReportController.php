@@ -171,8 +171,9 @@ class ReportController extends Controller
         ]);
 
         // Lấy tất cả các lớp có sinh viên đang học
-        $classes = ClassModel::whereHas('students', function ($query) {
-            $query->where('status', 'Đang học');
+        $classes = ClassModel::where('class_status', 'Đang học') // <-- THÊM ĐIỀU KIỆN LỌC NÀY
+            ->whereHas('students', function ($query) {
+                $query->where('status', 'Đang học');
         })
         ->with(['faculty', 'students' => function ($query) {
             $query->where('status', 'Đang học')->orderBy('full_name');
@@ -204,9 +205,10 @@ class ReportController extends Controller
     {
         $request->validate(['statistic_time' => 'required|string|max:100']);
 
-        $faculties = Faculty::with(['classes.students'])->orderBy('faculty_name')->get();
+        $faculties = $this->getReportData();
         $studentStats = $this->getStudentStats();
         $courseTotals = $this->getCourseTotals();
+        $facultyTotals = $this->getFacultyTotals($faculties, $studentStats);
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -227,7 +229,7 @@ class ReportController extends Controller
         $sheet->getStyle('A6')->getFont()->setItalic(true);
 
         // --- Tiêu đề bảng ---
-        $headers = ['TT', 'Mã lớp', 'Tên lớp', 'Tổng số nhập học', 'Tổng số đăng ký nhận', 'Dừng cấp', 'Tạm dừng cấp', 'Đang cấp', 'Ghi chú'];
+        $headers = ['TT', 'Mã lớp', 'Tên lớp', 'Sĩ số', 'Tổng số đăng ký nhận', 'Dừng cấp', 'Tạm dừng cấp', 'Đang cấp', 'Ghi chú'];
         $sheet->fromArray($headers, NULL, 'A8');
         $sheet->getStyle('A8:I8')->getFont()->setBold(true);
         $sheet->getStyle('A8:I8')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setWrapText(true);
@@ -252,7 +254,7 @@ class ReportController extends Controller
                     $sheet->setCellValue('A' . $currentRow, $stt++);
                     $sheet->setCellValue('B' . $currentRow, $class->class_code);
                     $sheet->setCellValue('C' . $currentRow, $class->class_name);
-                    $sheet->setCellValue('D' . $currentRow, $stats->total_enrolled ?? 0);
+                    $sheet->setCellValue('D' . $currentRow, $class->class_size ?? 0);
                     $sheet->setCellValue('E' . $currentRow, $stats->total_registered ?? 0);
                     $sheet->setCellValue('F' . $currentRow, $stats->total_stopped ?? 0);
                     $sheet->setCellValue('G' . $currentRow, $stats->total_paused ?? 0);
@@ -260,13 +262,37 @@ class ReportController extends Controller
                     $currentRow++;
                 }
             }
-            $currentRow++; // Dòng trống
+
+            // Dòng tổng của Khoa
+            $totals = $facultyTotals[$faculty->id];
+            $sheet->mergeCells("A{$currentRow}:C{$currentRow}")->setCellValue("A{$currentRow}", 'Tổng cộng khoa ' . $faculty->faculty_name . ':');
+            $sheet->setCellValue('D' . $currentRow, $totals->enrolled);
+            $sheet->setCellValue('E' . $currentRow, $totals->registered);
+            $sheet->setCellValue('F' . $currentRow, $totals->stopped);
+            $sheet->setCellValue('G' . $currentRow, $totals->paused);
+            $sheet->setCellValue('H' . $currentRow, $totals->receiving);
+            $sheet->getStyle("A{$currentRow}:I{$currentRow}")->getFont()->setBold(true)->getColor()->setARGB(Color::COLOR_RED);
+            $currentRow++;
+            $currentRow++; // Thêm dòng trống
         }
 
         // --- Phần tổng kết cuối báo cáo ---
         $currentRow++; // Dòng trống
+
+        // Dòng tiêu đề tổng cộng toàn trường
+       $sheet->getStyle("A{$currentRow}:I{$currentRow}")->getFont()->setBold(true);
+       $sheet->mergeCells("A{$currentRow}:C{$currentRow}")->setCellValue("A{$currentRow}", 'Tổng cộng theo ngành:');
+       $sheet->setCellValue('D' . $currentRow, 'Sĩ số');
+       $sheet->setCellValue('E' . $currentRow, 'Tổng số đăng ký nhận');
+       $sheet->setCellValue('F' . $currentRow, 'Dừng cấp');
+       $sheet->setCellValue('G' . $currentRow, 'Tạm dừng');
+       $sheet->setCellValue('H' . $currentRow, 'Đang cấp');
+       $currentRow++;
+
         foreach($courseTotals as $courseData) {
-            $sheet->mergeCells("A{$currentRow}:E{$currentRow}")->setCellValue("A{$currentRow}", 'Tổng cộng khóa ' . $courseData->course_year . ':');
+            $sheet->mergeCells("A{$currentRow}:C{$currentRow}")->setCellValue("A{$currentRow}", 'Tổng cộng khóa ' . $courseData->course_year . ':');
+            $sheet->setCellValue('D' . $currentRow, $courseData->total_enrolled);
+            $sheet->setCellValue('E' . $currentRow, $courseData->total_registered);
             $sheet->setCellValue('F' . $currentRow, $courseData->total_stopped);
             $sheet->setCellValue('G' . $currentRow, $courseData->total_paused);
             $sheet->setCellValue('H' . $currentRow, $courseData->total_receiving);
@@ -274,7 +300,9 @@ class ReportController extends Controller
         }
 
         // Dòng tổng cộng toàn trường
-        $sheet->mergeCells("A{$currentRow}:E{$currentRow}")->setCellValue("A{$currentRow}", 'Tổng cộng toàn trường:');
+        $sheet->mergeCells("A{$currentRow}:C{$currentRow}")->setCellValue("A{$currentRow}", 'Tổng cộng toàn trường:');
+        $sheet->setCellValue('D' . $currentRow, $courseTotals->sum('total_enrolled'));
+        $sheet->setCellValue('E' . $currentRow, $courseTotals->sum('total_registered'));
         $sheet->setCellValue('F' . $currentRow, $courseTotals->sum('total_stopped'));
         $sheet->setCellValue('G' . $currentRow, $courseTotals->sum('total_paused'));
         $sheet->setCellValue('H' . $currentRow, $courseTotals->sum('total_receiving'));
@@ -288,46 +316,57 @@ class ReportController extends Controller
         $sheet->getStyle("A{$currentRow}:I{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         // --- Định dạng và Xuất file ---
-        $sheet->getColumnDimension('C')->setWidth(35);
-        foreach (range('D', 'I') as $columnID) {
-            $sheet->getColumnDimension($columnID)->setWidth(15);
-        }
-        
         $fileName = 'Bao-cao-tong-quan-sinh-vien-116.xlsx';
         return response()->streamDownload(function () use ($spreadsheet) {
             $writer = new Xlsx($spreadsheet);
             $writer->save('php://output');
         }, $fileName);
     }
-    
-    /**
-     * THÊM MỚI: Chuẩn bị dữ liệu và hiển thị trang in cho báo cáo tổng quan.
-     */
 
+    /**
+     * Chuẩn bị dữ liệu và hiển thị trang in cho báo cáo tổng quan.
+     */
     public function printOverview(Request $request)
     {
         $request->validate(['statistic_time' => 'required|string|max:100']);
 
-        $faculties = Faculty::with(['classes.students'])->orderBy('faculty_name')->get();
+        $faculties = $this->getReportData();
         $studentStats = $this->getStudentStats();
         $courseTotals = $this->getCourseTotals();
+        $facultyTotals = $this->getFacultyTotals($faculties, $studentStats);
 
         return view('prints.overview-report', [
             'faculties' => $faculties,
             'studentStats' => $studentStats,
             'courseTotals' => $courseTotals,
+            'facultyTotals' => $facultyTotals,
             'statistic_time' => $request->statistic_time
         ]);
     }
+    
+    /**
+     * Hàm private để lấy dữ liệu Khoa và Lớp đang học.
+     */
+    private function getReportData()
+    {
+        return Faculty::whereHas('classes', function ($query) {
+                $query->where('class_status', 'Đang học');
+            })
+            ->with(['classes' => function ($query) {
+                $query->where('class_status', 'Đang học')
+                      ->orderBy('course_year', 'desc')->orderBy('class_name');
+            }])
+            ->orderBy('faculty_name')
+            ->get();
+    }
 
     /**
-     * Hàm private để lấy dữ liệu thống kê sinh viên, tái sử dụng cho cả in và xuất excel.
+     * Hàm private để lấy dữ liệu thống kê sinh viên.
      */
     private function getStudentStats()
     {
         return Student::select(
             'class_id',
-            DB::raw('COUNT(*) as total_enrolled'),
             DB::raw("SUM(CASE WHEN funding_status IS NOT NULL THEN 1 ELSE 0 END) as total_registered"),
             DB::raw("SUM(CASE WHEN funding_status = 'Thôi nhận' THEN 1 ELSE 0 END) as total_stopped"),
             DB::raw("SUM(CASE WHEN funding_status = 'Tạm dừng nhận' THEN 1 ELSE 0 END) as total_paused"),
@@ -343,16 +382,66 @@ class ReportController extends Controller
      */
     private function getCourseTotals()
     {
-        return Student::join('116_classes', '116_students.class_id', '=', '116_classes.id')
+        $studentData = Student::join('116_classes', '116_students.class_id', '=', '116_classes.id')
+            ->where('116_classes.class_status', 'Đang học')
             ->select(
                 '116_classes.course_year',
+                DB::raw("SUM(CASE WHEN funding_status IS NOT NULL THEN 1 ELSE 0 END) as total_registered"),
                 DB::raw('SUM(CASE WHEN funding_status = "Thôi nhận" THEN 1 ELSE 0 END) as total_stopped'),
                 DB::raw('SUM(CASE WHEN funding_status = "Tạm dừng nhận" THEN 1 ELSE 0 END) as total_paused'),
                 DB::raw('SUM(CASE WHEN funding_status = "Đang nhận" THEN 1 ELSE 0 END) as total_receiving')
             )
             ->groupBy('116_classes.course_year')
-            ->orderBy('116_classes.course_year')
-            ->get();
+            ->get()
+            ->keyBy('course_year');
+
+        $classData = ClassModel::where('class_status', 'Đang học')
+            ->select(
+                'course_year',
+                DB::raw('SUM(class_size) as total_enrolled')
+            )
+            ->groupBy('course_year')
+            ->get()
+            ->keyBy('course_year');
+
+        $mergedData = $classData->map(function ($item, $key) use ($studentData) {
+            $studentItem = $studentData->get($key);
+            if ($studentItem) {
+                $item->total_registered = $studentItem->total_registered;
+                $item->total_stopped = $studentItem->total_stopped;
+                $item->total_paused = $studentItem->total_paused;
+                $item->total_receiving = $studentItem->total_receiving;
+            } else {
+                $item->total_registered = 0;
+                $item->total_stopped = 0;
+                $item->total_paused = 0;
+                $item->total_receiving = 0;
+            }
+            return $item;
+        });
+
+        return $mergedData->sortBy('course_year')->values();
+    }
+
+    /**
+     * Hàm private để tính tổng cho từng khoa.
+     */
+    private function getFacultyTotals($faculties, $studentStats)
+    {
+        $facultyTotals = [];
+        foreach ($faculties as $faculty) {
+            $totals = ['enrolled' => 0, 'registered' => 0, 'stopped' => 0, 'paused' => 0, 'receiving' => 0];
+            foreach ($faculty->classes as $class) {
+                $stats = $studentStats->get($class->id);
+                $totals['enrolled'] += $class->class_size ?? 0;
+                $totals['registered'] += $stats->total_registered ?? 0;
+                $totals['stopped'] += $stats->total_stopped ?? 0;
+                $totals['paused'] += $stats->total_paused ?? 0;
+                $totals['receiving'] += $stats->total_receiving ?? 0;
+            }
+            $facultyTotals[$faculty->id] = (object) $totals;
+        }
+        return $facultyTotals;
     }
 }
 

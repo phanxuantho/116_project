@@ -55,7 +55,7 @@
                     <th rowspan="2">Khoa</th>
                     <th rowspan="2">Ngân hàng</th>
                     <th rowspan="2">Số tài khoản</th>
-                    <th colspan="2">Học kỳ {{ $semester }}<br>Năm học {{ $school_year }}</th>
+                    <th colspan="2">Học kỳ {{ $semester }}<br>Năm học {{ $school_year }}<span style="color: red;">*</span></th>
                     <th rowspan="2" style="width: 15%;">Ký tên</th>
                     <th rowspan="2">Ghi chú</th>
                 </tr>
