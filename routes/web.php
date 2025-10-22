@@ -3,6 +3,7 @@
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\GraduateEmploymentController;// khai báo việc làm
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,6 +18,21 @@ Route::get('/', function () {
 
 // Các route công khai (không cần đăng nhập)
 // Route::get('/about', ...);
+
+
+// --- Routes cho Cổng Khai báo Việc làm Sinh viên Tốt nghiệp (Không cần đăng nhập) ---
+Route::prefix('graduate-employment')->name('graduate.employment.')->group(function () {
+    // Trang nhập MSSV, CCCD để xác thực
+    Route::get('/', [GraduateEmploymentController::class, 'showVerificationForm'])->name('verify');
+    // Xử lý xác thực và hiển thị form khai báo
+    Route::post('/verify', [GraduateEmploymentController::class, 'verifyAndShowEmploymentForm'])->name('verify.post');
+    // Xử lý lưu/cập nhật form khai báo
+    Route::post('/store', [GraduateEmploymentController::class, 'storeOrUpdate'])->name('store');
+});
+
+
+
+
 
 // Các route cần xác thực (phải đăng nhập)
 Route::middleware(['auth'])->group(function () {
