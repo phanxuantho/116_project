@@ -1,6 +1,6 @@
 <x-guest-layout> <div class="mb-4 text-center">
         <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">
-            Cổng Khai Báo Việc Làm Sinh Viên Tốt Nghiệp
+            ĐĂNG NHẬP ĐỂ KHAI BÁO THÔNG TIN
         </h2>
         <p class="text-sm text-gray-600 dark:text-gray-400">
             Vui lòng nhập Mã sinh viên và Số CCCD để xác thực và khai báo.
@@ -44,4 +44,5 @@
             </x-primary-button>
         </div>
     </form>
+    <p class="mt-4 text-sm text-gray-600 dark:text-gray-400"> Nếu không đăng nhập được, sinh viên liên hệ zalo (0912044747) để lấy tài khoản !!! </p>
 </x-guest-layout>

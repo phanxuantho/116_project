@@ -1,5 +1,5 @@
 {{-- resources/views/graduate/employment/form.blade.php --}}
-<x-guest-layout> <div class="mb-4 text-center">
+<x-public-form-layout> <div class="mb-4 text-center">
         <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">
             Khai báo Thông tin Việc làm sau Tốt nghiệp
         </h2>
@@ -206,4 +206,4 @@
             </div>
         </div>
     </div>
-</x-guest-layout>
+</x-public-form-layout> {{-- Đóng layout mới --}}
