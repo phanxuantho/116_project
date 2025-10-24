@@ -20,6 +20,11 @@ Route::get('/', function () {
 // Route::get('/about', ...);
 
 
+// API route để lấy danh sách xã/phường
+Route::get('/api/get-wards-by-province/{province_code}', [GraduateEmploymentController::class, 'getWardsByProvince'])
+    ->name('api.getWardsByProvince');
+
+
 // --- Routes cho Cổng Khai báo Việc làm Sinh viên Tốt nghiệp (Không cần đăng nhập) ---
 Route::prefix('graduate-employment')->name('graduate.employment.')->group(function () {
     // Trang nhập MSSV, CCCD để xác thực
