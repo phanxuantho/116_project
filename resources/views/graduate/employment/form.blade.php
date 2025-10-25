@@ -62,13 +62,17 @@
                                 <x-text-input id="company_name" class="block mt-1 w-full" type="text" name="company_name" :value="old('company_name', $employmentInfo->company_name ?? '')" />
                                 <x-input-error :messages="$errors->get('company_name')" class="mt-2" />
                             </div>
-
+                            
                             <div class="mt-4">
                                 <x-input-label for="company_address" value="Địa chỉ cơ quan/Công ty" />
                                 <textarea id="company_address" name="company_address" rows="3" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">{{ old('company_address', $employmentInfo->company_address ?? '') }}</textarea>
                                 <x-input-error :messages="$errors->get('company_address')" class="mt-2" />
                             </div>
-
+                            <div class="mt-4">
+                                <x-input-label for="company_phone" value="Số điện thoại cơ quan" />
+                                <x-text-input id="company_phone" class="block mt-1 w-full" type="text" name="company_phone" :value="old('company_phone', $employmentInfo->company_phone ?? '')" />
+                                <x-input-error :messages="$errors->get('company_phone')" class="mt-2" />
+                            </div>
                              <div class="mt-4">
                                 <x-input-label for="employment_type" value="Loại hình công việc (*)" />
                                 <select id="employment_type" name="employment_type" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">

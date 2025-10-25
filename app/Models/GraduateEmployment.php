@@ -23,6 +23,7 @@ class GraduateEmployment extends Model
         'job_title',
         'company_name',
         'company_address',
+        'company_phone', // <-- THÊM DÒNG NÀY
         'employment_type',
         'start_date',
         'contract_type',

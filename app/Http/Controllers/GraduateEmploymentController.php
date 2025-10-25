@@ -96,6 +96,7 @@ class GraduateEmploymentController extends Controller
             'employment_status' => ['required', 'string', 'in:Đã có việc làm,Chưa có việc làm,Đang học nâng cao,Khác'],
             'job_title' => ['nullable', 'required_if:employment_status,Đã có việc làm', 'string', 'max:255'],
             'company_name' => ['nullable', 'required_if:employment_status,Đã có việc làm', 'string', 'max:255'],
+            'company_phone' => ['nullable', 'string', 'max:20'],
             'company_address' => ['nullable', 'string'],
             'employment_type' => ['nullable', 'required_if:employment_status,Đã có việc làm', 'string', 'in:Đúng ngành đào tạo,Trái ngành đào tạo'],
             'start_date' => ['nullable', 'required_if:employment_status,Đã có việc làm', 'date'],
