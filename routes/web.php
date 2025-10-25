@@ -4,6 +4,8 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\GraduateEmploymentController;// khai báo việc làm
+use App\Http\Controllers\StudentPublicProfileController; // cap nhat thong tin
+
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -34,6 +36,19 @@ Route::prefix('graduate-employment')->name('graduate.employment.')->group(functi
     // Xử lý lưu/cập nhật form khai báo
     Route::post('/store', [GraduateEmploymentController::class, 'storeOrUpdate'])->name('store');
 });
+
+// --- Routes cho Cổng Cập nhật Thông tin Sinh viên (Không cần đăng nhập) ---
+    Route::prefix('student-update')->name('student.update.')->group(function () {
+    // Trang nhập MSSV, CCCD
+    Route::get('/', [StudentPublicProfileController::class, 'showVerificationForm'])->name('verify');
+    // Xử lý xác thực và hiển thị form
+    Route::post('/verify', [StudentPublicProfileController::class, 'verifyAndShowProfileForm'])->name('verify.post');
+    // Xử lý lưu
+    Route::post('/store', [StudentPublicProfileController::class, 'updateProfile'])->name('store');
+});
+
+
+
 
 
 
