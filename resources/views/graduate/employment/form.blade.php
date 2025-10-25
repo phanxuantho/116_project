@@ -2,7 +2,7 @@
 <x-public-form-layout>
     <div class="mb-4 text-center">
         <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">
-            Khai báo Thông tin Việc làm sau Tốt nghiệp
+            KHAI BÁO THÔNG TIN VIỆC LÀM SAU TỐT NGHIỆP
         </h2>
     </div>
     <div class="py-2">
