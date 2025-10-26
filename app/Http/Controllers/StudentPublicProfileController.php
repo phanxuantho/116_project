@@ -9,6 +9,7 @@ use App\Models\Ward;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB; 
 
 class StudentPublicProfileController extends Controller
 {
@@ -44,7 +45,39 @@ class StudentPublicProfileController extends Controller
             $wards = Ward::where('province_code', $student->province_code)->orderBy('name')->get();
         }
 
-        return view('student_update.edit', compact('student', 'provinces', 'wards'));
+        // === BẮT ĐẦU TÍNH TOÁN KINH PHÍ ===
+        $studentCode = $student->student_code;
+
+        // 1. Tổng hỗ trợ Học phí (từ 116_tuition_grants)
+        $totalTuitionGrant = DB::table('116_tuition_grants')
+                                ->where('student_code', $studentCode)
+                                //->whereNotNull('paid_at') // Chỉ tính các khoản đã chi
+                                ->sum('grant_amount');
+
+        // 2. Tổng Sinh hoạt phí (từ 116_monthly_allowances)
+        $totalMonthlyAllowance = DB::table('116_monthly_allowances')
+                                   ->where('student_code', $studentCode)
+                                   ->where('status', 'Đã chi trả')
+                                   ->sum('amount');
+        
+        // 3. Tổng Sinh hoạt phí (từ 116_semester_allowances - Dữ liệu cũ trả theo đợt)
+        $totalSemesterAllowance = DB::table('116_semester_allowances')
+                                    ->where('student_code', $studentCode)
+                                    ->where('status', 'Đã chi trả') // Giả định bạn đã thêm cột status
+                                    ->sum('amount');
+        
+        // Cộng dồn 2 khoản sinh hoạt phí
+        $totalLivingAllowance = $totalMonthlyAllowance + $totalSemesterAllowance;
+        // === KẾT THÚC TÍNH TOÁN KINH PHÍ ===
+
+
+        return view('student_update.edit', compact(
+            'student', 
+            'provinces', 
+            'wards',
+            'totalTuitionGrant',      // <-- Biến mới
+            'totalLivingAllowance'    // <-- Biến mới
+        ));
     }
 
 
@@ -66,11 +99,11 @@ class StudentPublicProfileController extends Controller
 
         // === BẢO MẬT: CHỈ VALIDATE 5 TRƯỜNG ĐƯỢC PHÉP SỬA ===
         $validatedData = $request->validate([
-            'email' => ['nullable', 'string', 'email', 'max:100', Rule::unique('116_students')->ignore($student->student_code, 'student_code')],
-            'phone' => ['nullable', 'string', 'max:15'],
-            'province_code' => ['nullable', 'string', 'exists:116_provinces,code'],
-            'ward_code' => ['nullable', 'string', 'exists:116_wards,code'],
-            'address_detail' => ['nullable', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:100', Rule::unique('116_students')->ignore($student->student_code, 'student_code')],
+            'phone' => ['required', 'string', 'max:15'],
+            'province_code' => ['required', 'string', 'exists:116_provinces,code'],
+            'ward_code' => ['required', 'string', 'exists:116_wards,code'],
+            'address_detail' => ['required', 'string', 'max:255'],
         ]);
         // Các trường 'bank_account', 'bank_name', 'bank_branch' đã bị loại bỏ
         // ----------------------------------------------------

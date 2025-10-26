@@ -48,8 +48,41 @@
                     </div>
                 </div>
             </div>-->
-            
         </div>
+
+
+        <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Thông tin Kinh phí đã nhận</h3>
+        <div class="mt-2 mb-6 border-t border-gray-100 dark:border-gray-700">
+             <dl class="divide-y divide-gray-100 dark:divide-gray-700">
+                <div class="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">Tổng hỗ trợ Học phí</dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 dark:text-gray-300 sm:col-span-2 sm:mt-0 font-semibold text-green-600 dark:text-green-400">
+    
+                        @php
+                            echo number_format($totalTuitionGrant ?? 0, 0, ',', '.') . ' VNĐ';
+                        @endphp
+                    </dd>
+                </div>
+                <div class="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">Tổng hỗ trợ Sinh hoạt phí</dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 dark:text-gray-300 sm:col-span-2 sm:mt-0 font-semibold text-green-600 dark:text-green-400">
+                        @php
+                            echo number_format($totalLivingAllowance ?? 0, 0, ',', '.') . ' VNĐ';
+                        @endphp
+                    </dd>
+                </div>
+                <div class="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 bg-gray-50 dark:bg-gray-700/50">
+                    <dt class="text-sm font-bold leading-6 text-gray-900 dark:text-gray-100">TỔNG CỘNG ĐÃ NHẬN</dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 dark:text-gray-100 sm:col-span-2 sm:mt-0 font-bold text-lg text-blue-600 dark:text-blue-400">
+                        @php
+                            $tongCong = ($totalTuitionGrant ?? 0) + ($totalLivingAllowance ?? 0);
+                            echo number_format($tongCong, 0, ',', '.') . ' VNĐ';
+                        @endphp
+                    </dd>
+                </div>
+            </dl>
+        </div>
+   
 
         {{-- THÔNG TIN ĐƯỢC PHÉP SỬA --}}
         <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Cập nhật thông tin cá nhân</h3>
