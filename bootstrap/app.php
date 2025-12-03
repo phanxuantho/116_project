@@ -12,6 +12,19 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         //
+
+        // --- THÊM ALIAS CỦA BẠN VÀO ĐÂY - Trang cấu hình hệ thống setting - role admin mới truy cập được ---
+        $middleware->alias([
+           // 'auth' => \App\Http\Middleware\Authenticate::class,
+           // 'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+            // ... các alias mặc định khác ...
+            
+            // --- THÊM ALIAS CỦA BẠN VÀO ĐÂY ---
+            'admin' => \App\Http\Middleware\CheckAdminRole::class, 
+            // ------------------------------------
+        ]);
+
+    
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

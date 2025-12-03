@@ -5,6 +5,10 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\GraduateEmploymentController;// khai báo việc làm
 use App\Http\Controllers\StudentPublicProfileController; // cap nhat thong tin
+use App\Http\Controllers\SettingController; // Thêm dòng này ở đầu file
+use App\Http\Controllers\FacultyController;
+use App\Http\Controllers\MajorController;
+use App\Http\Controllers\ClassController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -109,16 +113,24 @@ Route::middleware(['auth'])->group(function () {
     
     });
 
-
-
-
-
-
     // **ROUTE MỚI**: Route này dùng để cung cấp dữ liệu Lớp học cho JavaScript một cách linh hoạt
     // Nó sẽ được gọi mỗi khi người dùng thay đổi bộ lọc Khoa hoặc Khóa học.
     Route::get('/get-classes-by-filter', [StudentController::class, 'getClasses'])->name('api.get_classes');
     // ROUTE API MỚI ĐỂ LẤY DANH SÁCH XÃ/PHƯỜNG
     Route::get('/get-wards-by-province', [StudentController::class, 'getWards'])->name('api.get_wards');
+    // Quản lý Khoa - Ngành - Lớp (Thêm vào đây)
+    Route::resource('faculties', FacultyController::class);
+    Route::resource('majors', MajorController::class);
+    Route::resource('classes', ClassController::class);
+    
+    // --- ROUTES CẤU HÌNH HỆ THỐNG ---
+    // Thêm middleware 'admin' để chỉ admin mới vào được
+    Route::middleware('admin')->group(function () {
+        Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
+        Route::patch('/settings', [SettingController::class, 'update'])->name('settings.update');
+    });
+    
+    
     
     // Thêm các route cần bảo vệ khác ở đây...
     // Route::get('/profile', ...);

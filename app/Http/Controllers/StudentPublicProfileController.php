@@ -10,17 +10,32 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB; 
+use App\Models\Setting; // <-- THÊM DÒNG NÀY VÀO ĐÂY
 
 class StudentPublicProfileController extends Controller
 {
     // ... (Hàm showVerificationForm và verifyAndShowProfileForm giữ nguyên) ...
     public function showVerificationForm()
     {
+ 
+        // Kiểm tra cấu hình có bật form không
+         if (!Setting::getValue('enable_student_update_form', true)) {
+            return redirect()->route('student.update.verify')
+                   ->withErrors(['message' => 'Chức năng cập nhật thông tin hiện đang tạm đóng.']);
+        }
         return view('student_update.verify');
     }
 
     public function verifyAndShowProfileForm(Request $request)
     {
+        // Kiểm tra cấu hình có bật form không
+        if (!Setting::getValue('enable_student_update_form', true)) {
+            return redirect()->route('student.update.verify')
+                   ->withErrors(['message' => 'Chức năng cập nhật thông tin hiện đang tạm đóng.']);
+        }
+        
+        
+        
         $request->validate([
             'student_code' => ['required', 'string'],
             'citizen_id_card' => ['required', 'string'],
@@ -69,14 +84,16 @@ class StudentPublicProfileController extends Controller
         // Cộng dồn 2 khoản sinh hoạt phí
         $totalLivingAllowance = $totalMonthlyAllowance + $totalSemesterAllowance;
         // === KẾT THÚC TÍNH TOÁN KINH PHÍ ===
-
-
+        
+        // Kiểm tra cấu hình có disable input không
+        $inputsDisabled = Setting::getValue('disable_student_update_inputs', false); // Mặc định là không disable
         return view('student_update.edit', compact(
             'student', 
             'provinces', 
             'wards',
             'totalTuitionGrant',      // <-- Biến mới
-            'totalLivingAllowance'    // <-- Biến mới
+            'totalLivingAllowance',    // <-- Biến mới
+            'inputsDisabled' // <-- Truyền biến này sang view
         ));
     }
 

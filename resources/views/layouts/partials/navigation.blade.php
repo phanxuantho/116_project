@@ -16,6 +16,20 @@
                     <a href="{{ route('dashboard') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('dashboard') ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
                         Trang chủ
                     </a>
+                    <!-- Quản lý Lớp khoa -->
+                    <div x-data="{ open: false }" @click.away="open = false" class="relative flex">
+                        <button @click="open = !open" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 text-sm font-medium leading-5 transition duration-150 ease-in-out">
+                            <span>Quản lý lớp khoa</span>
+                            <svg class="ml-2 -mr-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <div x-show="open" x-transition class="absolute mt-16 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 z-50">
+                            <a href="{{ route('faculties.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Quản lý Khoa</a>
+                            <a href="{{ route('majors.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Quản lý ngành</a>
+                            <a href="{{ route('classes.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Quản lý lớp</a>
+                        </div>
+                    </div>
 
                     <!-- Quản lý Sinh viên Dropdown -->
                     <div x-data="{ open: false }" @click.away="open = false" class="relative flex">
@@ -79,6 +93,18 @@
                         </button>
                     </div>
                     <div x-show="open" x-transition class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 z-50">
+                        
+                        {{-- ========================================= --}}
+                        {{-- THÊM ĐIỀU KIỆN VÀ LINK CẤU HÌNH VÀO ĐÂY --}}
+                        {{-- ========================================= --}}
+                        @if (Auth::check() && Auth::user()->role === 'admin')
+                     
+
+                            <a href="{{ route('settings.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cấu hình hệ thống</a>       
+
+                        @endif
+                        {{-- ========================================= --}}
+                    
                         <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Chỉnh sửa hồ sơ</a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf

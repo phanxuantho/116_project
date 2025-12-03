@@ -92,12 +92,12 @@
             {{-- Email và SĐT --}}
             <div>
                 <x-input-label for="email" value="Email liên hệ (*)" />
-                <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $student->email)" required />
+                <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $student->email)" required {{ $inputsDisabled ? 'disabled' : '' }} />
                 <x-input-error :messages="$errors->get('email')" class="mt-2" />
             </div>
             <div>
                 <x-input-label for="phone" value="Số điện thoại liên hệ (*)" />
-                <x-text-input id="phone" class="block mt-1 w-full" type="text" name="phone" :value="old('phone', $student->phone)" required />
+                <x-text-input id="phone" class="block mt-1 w-full" type="text" name="phone" :value="old('phone', $student->phone)" required {{ $inputsDisabled ? 'disabled' : '' }} />
                 <x-input-error :messages="$errors->get('phone')" class="mt-2" />
             </div>
 
@@ -110,7 +110,7 @@
             
              <div>
                 <x-input-label for="province_code" value="Tỉnh/Thành phố (*)" />
-                <select id="province_code" name="province_code" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" required>
+                <select id="province_code" name="province_code" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" required {{ $inputsDisabled ? 'disabled' : '' }}>
                     <option value="">-- Chọn Tỉnh/Thành phố --</option>
                     @foreach ($provinces as $province)
                         <option value="{{ $province->code }}" {{ old('province_code', $student->province_code) == $province->code ? 'selected' : '' }}>
@@ -123,7 +123,7 @@
             
             <div>
                 <x-input-label for="ward_code" value="Xã/Phường (*)" />
-                <select id="ward_code" name="ward_code" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" required>
+                <select id="ward_code" name="ward_code" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" required {{ $inputsDisabled ? 'disabled' : '' }}>
                     <option value="">-- Chọn Xã/Phường --</option>
                     {{-- $wards được truyền từ controller --}}
                     @foreach ($wards as $ward) 
@@ -137,22 +137,30 @@
             
             <div class="md:col-span-2">
                 <x-input-label for="address_detail" value="Số nhà, tên đường, thôn/xóm (*)" />
-                <x-text-input id="address_detail" class="block mt-1 w-full" type="text" name="address_detail" :value="old('address_detail', $student->address_detail)" required />
+                <x-text-input id="address_detail" class="block mt-1 w-full" type="text" name="address_detail" :value="old('address_detail', $student->address_detail)" required {{ $inputsDisabled ? 'disabled' : '' }} />
                 <x-input-error :messages="$errors->get('address_detail')" class="mt-2" />
             </div>
 
         </div> 
         {{-- Hết Grid 2 cột --}}
+        {{-- ... (Trước nút Lưu) --}}
+        @if (!$inputsDisabled)
+            <div class="flex items-center justify-between mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <a href="{{ route('student.update.verify') }}" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
+                    « Hủy (Quay lại)
+                </a>
+                <x-primary-button>
+                    Lưu Cập Nhật
+                </x-primary-button>
+            </div>
+        @else
+             <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 text-right">
+                 <a href="{{ route('student.update.verify') }}" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">« Quay lại</a>
+                 <p class="mt-2 text-sm text-yellow-600 dark:text-yellow-400">Chức năng cập nhật đang tạm đóng. Bạn chỉ có thể xem thông tin.</p>
+             </div>
+        @endif
 
 
-        <div class="flex items-center justify-between mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <a href="{{ route('student.update.verify') }}" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
-                « Hủy (Quay lại)
-            </a>
-            <x-primary-button>
-                Lưu Cập Nhật
-            </x-primary-button>
-        </div>
     </form>
 
     <script>

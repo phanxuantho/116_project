@@ -10,6 +10,7 @@ use App\Models\Ward; // Thêm model Ward
 use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Session;
+use App\Models\Setting; // <-- THÊM DÒNG NÀY VÀO ĐÂY
 
 class GraduateEmploymentController extends Controller
 {
@@ -18,6 +19,18 @@ class GraduateEmploymentController extends Controller
      */
     public function showVerificationForm()
     {
+        // === BẠN THÊM ĐOẠN CODE KIỂM TRA VÀO ĐÂY ===
+        // Mặc định là 'true' (bật) nếu không tìm thấy cấu hình
+        if (!Setting::getValue('enable_graduate_form', true)) { 
+             
+            // Nếu cấu hình là 'OFF', quay lại trang trước với thông báo lỗi
+            return redirect()->back()->withErrors([
+                'message' => 'Chức năng khai báo việc làm hiện đang tạm đóng. Vui lòng quay lại sau.'
+            ]);
+       }
+       // =============================================
+        
+        
         return view('graduate.employment.verify');
     }
 
