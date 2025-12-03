@@ -84,9 +84,21 @@ class ClassController extends Controller
         return redirect()->route('classes.index')->with('success', 'Cập nhật lớp thành công');
     }
 
-    public function destroy($id)
+public function destroy($id)
     {
-        ClassModel::destroy($id);
+        // 1. Tìm lớp học theo ID
+        $class = ClassModel::findOrFail($id);
+
+        // 2. Kiểm tra xem lớp này có sinh viên không
+        // (Giả định bạn đã khai báo relationship 'students' trong ClassModel)
+        if ($class->students()->exists()) {
+            return redirect()->route('classes.index')
+                ->with('error', 'Không thể xóa lớp này vì đang có sinh viên theo học. Vui lòng chuyển sinh viên sang lớp khác hoặc xóa sinh viên trước.');
+        }
+
+        // 3. Nếu không có sinh viên, tiến hành xóa
+        $class->delete();
+
         return redirect()->route('classes.index')->with('success', 'Xóa lớp thành công');
     }
 }

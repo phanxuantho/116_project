@@ -8,6 +8,10 @@ class Faculty extends Model
     use HasFactory;
     // Chỉ định tên bảng trong CSDL mà model này sẽ làm việc
     protected $table = '116_faculties';
+    protected $fillable = [
+        'faculty_code',
+        'faculty_name',
+    ];
 
     // Định nghĩa quan hệ: Một Khoa (Faculty) có nhiều Ngành (Major)
     public function majors() {

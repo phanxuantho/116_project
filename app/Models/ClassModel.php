@@ -8,6 +8,17 @@ class ClassModel extends Model
 {
     use HasFactory;
     protected $table = '116_classes';
+    // --- THÊM PHẦN NÀY VÀO ---
+    protected $fillable = [
+        'class_code',
+        'class_name',
+        'major_id',
+        'faculty_id',
+        'course_year',
+        'class_size',
+        'class_status',
+    ];
+    // -------------------------
 
     // Một Lớp (ClassModel) thuộc về một Ngành (Major)
     public function major() {
