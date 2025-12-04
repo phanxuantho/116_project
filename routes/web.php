@@ -12,6 +12,7 @@ use App\Http\Controllers\ClassController;
 use App\Http\Controllers\ProvinceStudentReportController;
 use App\Http\Controllers\ProvinceStudentResultReportController;
 use App\Http\Controllers\ProvinceStudentGraduationReportController;
+use App\Http\Controllers\SyncDataController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -144,9 +145,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/province-graduations', [ProvinceStudentGraduationReportController::class, 'index'])->name('province_graduations.index');
         Route::get('/province-graduations/print', [ProvinceStudentGraduationReportController::class, 'print'])->name('province_graduations.print');
         Route::get('/province-graduations/export', [ProvinceStudentGraduationReportController::class, 'export'])->name('province_graduations.export');
+       
+        
 
 
     });
+    // API SYNC ROUTES
+        Route::get('/sync-data', [SyncDataController::class, 'index'])->name('sync.index');
+        Route::post('/sync-data/fetch', [SyncDataController::class, 'fetchData'])->name('sync.fetch');
+        Route::post('/sync-data/import', [SyncDataController::class, 'importData'])->name('sync.import');
     
     // --- ROUTES CẤU HÌNH HỆ THỐNG ---
     // Thêm middleware 'admin' để chỉ admin mới vào được

@@ -34,5 +34,11 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'ttn' => [
+        'base_url' => env('TTN_API_URL'),
+        'server_id' => env('TTN_SERVER_ID'),
+        'secret_start' => env('TTN_SECRET_START'),
+        'secret_new' => env('TTN_SECRET_NEW'),
+    ],   
 
 ];

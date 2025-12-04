@@ -130,7 +130,7 @@
                      
 
                             <a href="{{ route('settings.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cấu hình hệ thống</a>       
-
+                            <a href="{{ route('sync.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">API</a>  
                         @endif
                         {{-- ========================================= --}}
                     
