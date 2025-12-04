@@ -10,6 +10,8 @@ use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\MajorController;
 use App\Http\Controllers\ClassController;
 use App\Http\Controllers\ProvinceStudentReportController;
+use App\Http\Controllers\ProvinceStudentResultReportController;
+use App\Http\Controllers\ProvinceStudentGraduationReportController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -125,9 +127,26 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('classes', ClassController::class);
 
     // Báo cáo danh sách sinh viên đầu khoá cho các tỉnh
-    Route::get('/province-students', [ProvinceStudentReportController::class, 'index'])->name('province_students.index');
-    Route::get('/province-students/print', [ProvinceStudentReportController::class, 'print'])->name('province_students.print');
-    Route::get('/province-students/export', [ProvinceStudentReportController::class, 'export'])->name('province_students.export');
+    Route::prefix('reports')->name('reports.')->middleware('auth')->group(function () {
+        
+        // ... các route cũ ...
+
+        // THÊM ĐOẠN NÀY VÀO:
+        Route::get('/province-students', [ProvinceStudentReportController::class, 'index'])->name('province_students.index');
+        Route::get('/province-students/print', [ProvinceStudentReportController::class, 'print'])->name('province_students.print');
+        Route::get('/province-students/export', [ProvinceStudentReportController::class, 'export'])->name('province_students.export');
+        // Báo cáo Kết quả học tập (TK02)
+        Route::get('/province-results', [ProvinceStudentResultReportController::class, 'index'])->name('province_results.index');
+        Route::get('/province-results/print', [ProvinceStudentResultReportController::class, 'print'])->name('province_results.print');
+        Route::get('/province-results/export', [ProvinceStudentResultReportController::class, 'export'])->name('province_results.export');
+        
+        // Báo cáo Tốt nghiệp (TK03)
+        Route::get('/province-graduations', [ProvinceStudentGraduationReportController::class, 'index'])->name('province_graduations.index');
+        Route::get('/province-graduations/print', [ProvinceStudentGraduationReportController::class, 'print'])->name('province_graduations.print');
+        Route::get('/province-graduations/export', [ProvinceStudentGraduationReportController::class, 'export'])->name('province_graduations.export');
+
+
+    });
     
     // --- ROUTES CẤU HÌNH HỆ THỐNG ---
     // Thêm middleware 'admin' để chỉ admin mới vào được

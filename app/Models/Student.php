@@ -2,6 +2,8 @@
 namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Province;
+use App\Models\Ward;
 
 class Student extends Model
 {
@@ -47,11 +49,31 @@ class Student extends Model
         return $this->hasMany(StudentStatusLog::class, 'student_code', 'student_code')->latest();
     }
 
-
+    public function province()
+    {
+        return $this->belongsTo(Province::class, 'province_code', 'code');
+    }
     // Một Sinh viên (Student) thuộc về một Lớp (ClassModel)
     public function class() {
         // Tham số thứ 2 ('class_id') là khóa ngoại trong bảng `116_students`
         // Tham số thứ 3 ('id') là khóa chính trong bảng `116_classes`
         return $this->belongsTo(ClassModel::class, 'class_id', 'id');
+    }
+    public function ward()
+    {
+        // 'ward_code' là khóa ngoại ở bảng students
+        // 'code' là khóa chính ở bảng wards
+        return $this->belongsTo(Ward::class, 'ward_code', 'code');
+    }
+    public function academicResults()
+    {
+        // 'student_code' là khóa ngoại ở bảng 116_academic_results
+        // 'student_code' là khóa chính ở bảng 116_students
+        return $this->hasMany(AcademicResult::class, 'student_code', 'student_code');
+    }
+    public function graduation()
+    {
+        // 'student_code' là khóa liên kết
+        return $this->hasOne(Graduation::class, 'student_code', 'student_code');
     }
 }

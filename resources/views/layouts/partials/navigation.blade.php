@@ -89,9 +89,10 @@
                                 <div x-show="subOpen" 
                                     x-transition 
                                     class="absolute left-full top-0 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 z-50 -ml-1">
-                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo đầu khoá</a>
-                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo học kì</a>
-                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo tốt nghiệp</a>
+                                    <a href="{{ route('reports.province_students.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo đầu khoá</a>
+                                    <a href="{{ route('reports.province_results.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo học kì</a>
+                                    <a href="{{ route('reports.province_graduations.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo tốt nghiệp</a>
+                                    
                                 </div>
                             </div>
                             {{-- KẾT THÚC: Menu cấp 2 --}}

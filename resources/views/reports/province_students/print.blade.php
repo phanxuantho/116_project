@@ -45,8 +45,8 @@
         </table>
 
         {{-- Tiêu đề Báo cáo --}}
-        <div class="title">DANH SÁCH SINH VIÊN KHOA TUYỂN SINH {{ $year }} ĐƯỢC CẤP HỖ TRỢ TIỀN ĐÓNG HỌC PHÍ, CHI PHÍ SINH HOẠT</div>
-        <div class="title">ĐỐI VỚI SINH VIÊN SƯ PHẠM THEO NGHỊ ĐỊNH 116/2020/NĐ-CP, CÓ HỘ KHẨU THƯỜNG TRÚ TẠI TỈNH {{ mb_strtoupper($provinceName) }}</div>
+        <div class="title">DANH SÁCH SINH VIÊN KHOA TUYỂN SINH {{ $year }} ĐƯỢC CẤP HỖ TRỢ TIỀN ĐÓNG HỌC PHÍ, CHI PHÍ SINH HOẠT <br>
+            ĐỐI VỚI SINH VIÊN SƯ PHẠM THEO NGHỊ ĐỊNH 116/2020/NĐ-CP, CÓ HỘ KHẨU THƯỜNG TRÚ TẠI TỈNH {{ mb_strtoupper($provinceName) }}</div>
 
         {{-- Bảng dữ liệu --}}
         <table>
@@ -75,7 +75,7 @@
                     </td>
                     <td>{{ $student->class->faculty->faculty_name ?? '' }}</td>
                     <td class="text-left">
-                        {{ $student->address_detail }} - {{ $student->ward->name ?? '' }}
+                        {{ $student->old_address_detail }}
                     </td>
                     <td>{{ $provinceName }}</td>
                     <td>{{ $student->citizen_id_card }}</td>
