@@ -9,6 +9,7 @@ use App\Http\Controllers\SettingController; // Thêm dòng này ở đầu file
 use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\MajorController;
 use App\Http\Controllers\ClassController;
+use App\Http\Controllers\ProvinceStudentReportController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -122,6 +123,11 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('faculties', FacultyController::class);
     Route::resource('majors', MajorController::class);
     Route::resource('classes', ClassController::class);
+
+    // Báo cáo danh sách sinh viên đầu khoá cho các tỉnh
+    Route::get('/province-students', [ProvinceStudentReportController::class, 'index'])->name('province_students.index');
+    Route::get('/province-students/print', [ProvinceStudentReportController::class, 'print'])->name('province_students.print');
+    Route::get('/province-students/export', [ProvinceStudentReportController::class, 'export'])->name('province_students.export');
     
     // --- ROUTES CẤU HÌNH HỆ THỐNG ---
     // Thêm middleware 'admin' để chỉ admin mới vào được
