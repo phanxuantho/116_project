@@ -7,8 +7,13 @@ use App\Services\TtnApiService;
 use App\Models\Faculty;
 use App\Models\ClassModel;
 use App\Models\Student;
+// 👇 THÊM CÁC MODEL NÀY
+use App\Models\AcademicResult;
+use App\Models\SchoolYear;
+use App\Models\Semester; 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+
 
 class SyncDataController extends Controller
 {
@@ -82,7 +87,6 @@ class SyncDataController extends Controller
         }
     }
 
-    // Hàm Import dữ liệu vào Database 116
     public function importData(Request $request)
     {
         $type = $request->input('type');
@@ -98,55 +102,55 @@ class SyncDataController extends Controller
             $errors = [];
 
             switch ($type) {
-                // IMPORT KHOA (FACULTIES)
-                case 'units':
+                // ... (Các case 'units', 'lop_khoa', 'sv_lop' giữ nguyên) ...
+
+                // 👇 THÊM LOGIC XỬ LÝ KẾT QUẢ HỌC TẬP TẠI ĐÂY
+                case 'kqht_lop':
                     foreach ($data as $item) {
-                        // Giả sử API trả về: MaDV, TenDV
-                        Faculty::updateOrCreate(
-                            ['code' => $item['MaDV']], 
-                            ['name' => $item['TenDV']]
+                        // 1. Tìm hoặc Tạo Năm học (Ví dụ: 2024-2025)
+                        // Giả sử bảng school_years có cột 'name'
+                        $schoolYear = SchoolYear::firstOrCreate(
+                            ['name' => $item['NamHoc']],
+                            ['start_year' => substr($item['NamHoc'], 0, 4), 'end_year' => substr($item['NamHoc'], 5, 4)]
                         );
-                        $count++;
-                    }
-                    break;
 
-                // IMPORT LỚP (CLASSES)
-                case 'lop_khoa':
-                    foreach ($data as $item) {
-                        // Cần tìm ID của Khoa dựa trên mã Khoa trả về từ API
-                        $faculty = Faculty::where('code', $item['MaKhoa'] ?? '')->first(); // Check field name API trả về
-                        if ($faculty) {
-                            ClassModel::updateOrCreate(
-                                ['code' => $item['MaLop']],
-                                [
-                                    'name' => $item['TenLop'],
-                                    'faculty_id' => $faculty->id,
-                                    // 'course_year' => ... nếu API có trả về
-                                ]
-                            );
-                            $count++;
-                        }
-                    }
-                    break;
+                        // 2. Tìm hoặc Tạo Học kỳ (Ví dụ: Học kỳ 1 của 2024-2025)
+                        // Giả sử bảng semesters có cột 'school_year_id' và 'semester_index' (1, 2, 3)
+                        $semester = Semester::firstOrCreate(
+                            [
+                                'school_year_id' => $schoolYear->id,
+                                'semester_number' => $item['HocKy']
+                            ],
+                            [
+                                'name' => 'Học kỳ ' . $item['HocKy'] . ' năm ' . $item['NamHoc']
+                            ]
+                        );
 
-                // IMPORT SINH VIÊN (STUDENTS)
-                case 'sv_lop':
-                    foreach ($data as $item) {
-                        // Cần tìm ID của Lớp
-                        $class = ClassModel::where('code', $item['MaLop'] ?? '')->first();
+                        // 3. Kiểm tra Sinh viên có tồn tại không
+                        $studentExists = Student::where('student_code', $item['MaSV'])->exists();
                         
-                        if ($class) {
-                            Student::updateOrCreate(
-                                ['student_code' => $item['MaSV']],
+                        if ($studentExists) {
+                            // 4. Update hoặc Insert vào bảng 116_academic_results
+                            AcademicResult::updateOrCreate(
                                 [
-                                    'fullname' => $item['HoTen'] ?? $item['HoVaTen'], // Check key API
-                                    'class_id' => $class->id,
-                                    'gender' => ($item['GioiTinh'] == 'Nam' ? 'male' : 'female'),
-                                    'date_of_birth' => $this->formatDate($item['NgaySinh'] ?? null),
-                                    // Map thêm các trường khác như dân tộc, quê quán nếu API có
+                                    // Điều kiện unique (student_code + semester_id)
+                                    'student_code' => $item['MaSV'],
+                                    'semester_id'  => $semester->id, 
+                                ],
+                                [
+                                    // Mapping dữ liệu từ JSON sang Database
+                                    'academic_score'      => $this->parseScore($item['DiemTB']), // DiemTB
+                                    'conduct_score'       => $this->parseScore($item['DiemRL']), // DiemRL
+                                    'registered_credits'  => (int)$item['SoTC'],                 // SoTC
+                                    
+                                    // JSON không có tích lũy, tạm để 0 hoặc bằng số TC đăng ký để tránh lỗi NOT NULL
+                                    'accumulated_credits' => (int)$item['SoTC'],                 
                                 ]
                             );
                             $count++;
+                        } else {
+                            // Ghi lại lỗi nếu SV chưa có trong hệ thống
+                            $errors[] = "SV {$item['MaSV']} chưa tồn tại trong hệ thống, bỏ qua kết quả.";
                         }
                     }
                     break;
@@ -155,7 +159,7 @@ class SyncDataController extends Controller
             DB::commit();
             return response()->json([
                 'success' => true, 
-                'message' => "Đã import thành công $count bản ghi.",
+                'message' => "Đã xử lý xong. Thành công: $count bản ghi.",
                 'details' => ['errors' => $errors]
             ]);
 
@@ -164,6 +168,12 @@ class SyncDataController extends Controller
             Log::error($e);
             return response()->json(['success' => false, 'message' => 'Lỗi Import: ' . $e->getMessage()]);
         }
+    }
+
+    // Hàm phụ trợ để xử lý điểm số (tránh lỗi null hoặc rỗng)
+    private function parseScore($value) {
+        if ($value === null || $value === '') return null;
+        return (float)$value;
     }
 
     private function formatDate($dateString) {

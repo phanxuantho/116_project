@@ -125,111 +125,129 @@
         </div>
     </div>
 
-    <script>
-        let currentData = null;
-        let currentType = null;
+<script>
+    let currentData = null;
+    let currentType = null;
 
-        async function fetchData(type) {
-            const viewer = document.getElementById('json-viewer');
-            const loading = document.getElementById('loading');
-            const btnImport = document.getElementById('btn-import');
-            const statusMsg = document.getElementById('status-msg');
-            
-            const payload = {
-                type: type,
-                ma_dv: document.getElementById('ma_dv').value,
-                nam_hoc: document.getElementById('nam_hoc').value,
-                hoc_ky: document.getElementById('hoc_ky').value,
-                ma_lop: document.getElementById('ma_lop').value,
-                ma_sv: document.getElementById('ma_sv').value
-            };
+    async function fetchData(type) {
+        const viewer = document.getElementById('json-viewer');
+        const loading = document.getElementById('loading');
+        const btnImport = document.getElementById('btn-import');
+        const statusMsg = document.getElementById('status-msg');
+        
+        const payload = {
+            type: type,
+            ma_dv: document.getElementById('ma_dv').value,
+            nam_hoc: document.getElementById('nam_hoc').value,
+            hoc_ky: document.getElementById('hoc_ky').value,
+            ma_lop: document.getElementById('ma_lop').value,
+            ma_sv: document.getElementById('ma_sv').value
+        };
 
-            loading.classList.remove('hidden');
-            btnImport.classList.add('hidden');
-            statusMsg.classList.add('hidden');
-            viewer.textContent = 'Đang kết nối đến API...';
-            
-            try {
-                const response = await fetch('{{ route("sync.fetch") }}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(payload) 
-                });
+        loading.classList.remove('hidden');
+        btnImport.classList.add('hidden');
+        btnImport.classList.remove('flex'); // Ẩn nút import khi đang tải
+        statusMsg.classList.add('hidden');
+        viewer.textContent = 'Đang kết nối đến API...';
+        
+        try {
+            const response = await fetch('{{ route("sync.fetch") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload) 
+            });
 
-                const result = await response.json();
+            const result = await response.json();
 
-                if (result.success) {
-                    viewer.textContent = JSON.stringify(result.data, null, 4);
-                    currentData = result.data;
-                    currentType = type;
-                    
-                    let countInfo = Array.isArray(result.data) ? `(${result.data.length} bản ghi)` : '';
-                    showStatus(`✅ ${result.message} ${countInfo}`, 'success');
+            if (result.success) {
+                // === LOGIC MỚI: CHUẨN HÓA DỮ LIỆU ===
+                let finalData = result.data;
 
-                    // Hiện nút Import nếu là các loại dữ liệu đã hỗ trợ Import (Hiện tại chỉ mới hỗ trợ Khoa, Lớp, SV)
-                    if (['units', 'lop_khoa', 'sv_lop'].includes(type) && Array.isArray(result.data) && result.data.length > 0) {
-                        btnImport.classList.remove('hidden');
-                        btnImport.classList.add('flex');
-                    }
-                } else {
-                    viewer.textContent = JSON.stringify(result, null, 4);
-                    showStatus('❌ ' + (result.message || 'Lỗi không xác định'), 'error');
+                // Nếu kết quả trả về là Object có chứa key "Data" (trường hợp KQHT), thì lấy mảng bên trong
+                if (!Array.isArray(finalData) && finalData.Data) {
+                    finalData = finalData.Data;
                 }
-            } catch (error) {
-                viewer.textContent = "Error: " + error;
-                showStatus('⚠️ Lỗi kết nối mạng hoặc Server', 'error');
-            } finally {
-                loading.classList.add('hidden');
-            }
-        }
 
-        async function importToDB() {
-            if (!currentData || !currentType) return;
-            
-            const btnImport = document.getElementById('btn-import');
-            const originalText = btnImport.innerHTML;
-            
-            if(!confirm(`Bạn có chắc muốn import dữ liệu này vào CSDL?`)) return;
-
-            btnImport.innerHTML = 'Đang xử lý...';
-            btnImport.disabled = true;
-
-            try {
-                const response = await fetch('{{ route("sync.import") }}', {
-                    method: 'POST',
-                    headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json'},
-                    body: JSON.stringify({ type: currentType, data: currentData })
-                });
-                const result = await response.json();
+                currentData = finalData;
+                currentType = type;
                 
-                if (result.success) {
-                    showStatus(result.message, 'success');
-                    if (result.details && result.details.errors && result.details.errors.length > 0) {
-                          alert("Có lỗi với một số bản ghi:\n" + result.details.errors.join("\n"));
-                    } else {
-                        alert(result.message);
-                    }
-                } else {
-                    showStatus('❌ ' + result.message, 'error');
-                }
-            } catch (error) {
-                showStatus('⚠️ Lỗi Import: ' + error, 'error');
-            } finally {
-                btnImport.innerHTML = originalText;
-                btnImport.disabled = false;
-            }
-        }
+                // Hiển thị JSON
+                viewer.textContent = JSON.stringify(finalData, null, 4);
 
-        function showStatus(msg, type) {
-            const el = document.getElementById('status-msg');
-            el.classList.remove('hidden', 'bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
-            if (type === 'success') el.classList.add('bg-green-100', 'text-green-700');
-            else el.classList.add('bg-red-100', 'text-red-700');
-            el.textContent = msg;
+                let countInfo = Array.isArray(finalData) ? `(${finalData.length} bản ghi)` : '';
+                showStatus(`✅ ${result.message} ${countInfo}`, 'success');
+
+                // Danh sách các loại dữ liệu hỗ trợ Import
+                const supportedTypes = ['units', 'lop_khoa', 'sv_lop', 'kqht_lop'];
+
+                // Logic hiển thị nút: Phải nằm trong danh sách hỗ trợ VÀ là mảng VÀ có dữ liệu
+                if (supportedTypes.includes(type) && Array.isArray(finalData) && finalData.length > 0) {
+                    btnImport.classList.remove('hidden');
+                    btnImport.classList.add('flex');
+                } else {
+                    btnImport.classList.add('hidden');
+                    btnImport.classList.remove('flex');
+                }
+
+            } else {
+                viewer.textContent = JSON.stringify(result, null, 4);
+                showStatus('❌ ' + (result.message || 'Lỗi không xác định'), 'error');
+            }
+        } catch (error) {
+            viewer.textContent = "Error: " + error;
+            showStatus('⚠️ Lỗi kết nối mạng hoặc Server', 'error');
+        } finally {
+            loading.classList.add('hidden');
         }
-    </script>
+    }
+
+    async function importToDB() {
+        if (!currentData || !currentType) return;
+        
+        const btnImport = document.getElementById('btn-import');
+        const originalText = btnImport.innerHTML;
+        
+        if(!confirm(`Bạn có chắc muốn import dữ liệu này vào CSDL?`)) return;
+
+        btnImport.innerHTML = 'Đang xử lý...';
+        btnImport.disabled = true;
+
+        try {
+            const response = await fetch('{{ route("sync.import") }}', {
+                method: 'POST',
+                headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json'},
+                body: JSON.stringify({ type: currentType, data: currentData })
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                showStatus(result.message, 'success');
+                if (result.details && result.details.errors && result.details.errors.length > 0) {
+                      alert("Có lỗi với một số bản ghi:\n" + result.details.errors.join("\n"));
+                } else {
+                    alert(result.message);
+                }
+            } else {
+                showStatus('❌ ' + result.message, 'error');
+            }
+        } catch (error) {
+            showStatus('⚠️ Lỗi Import: ' + error, 'error');
+        } finally {
+            btnImport.innerHTML = originalText;
+            btnImport.disabled = false;
+        }
+    }
+
+    function showStatus(msg, type) {
+        const el = document.getElementById('status-msg');
+        el.classList.remove('hidden', 'bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
+        if (type === 'success') el.classList.add('bg-green-100', 'text-green-700');
+        else el.classList.add('bg-red-100', 'text-red-700');
+        el.textContent = msg;
+    }
+</script>
 </x-app-layout>
