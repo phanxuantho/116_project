@@ -151,9 +151,21 @@ Route::middleware(['auth'])->group(function () {
 
     });
     // API SYNC ROUTES
-        Route::get('/sync-data', [SyncDataController::class, 'index'])->name('sync.index');
-        Route::post('/sync-data/fetch', [SyncDataController::class, 'fetchData'])->name('sync.fetch');
-        Route::post('/sync-data/import', [SyncDataController::class, 'importData'])->name('sync.import');
+    Route::prefix('sync-data')->name('sync.')->group(function () {
+        // Trang giao diện chính
+        Route::get('/', [SyncDataController::class, 'index'])->name('index');
+        // API lấy dữ liệu lẻ
+        Route::post('/fetch', [SyncDataController::class, 'fetchData'])->name('fetch');
+        // API Import dữ liệu vào DB
+        Route::post('/import', [SyncDataController::class, 'importData'])->name('import');
+        // API Lấy danh sách mã lớp (Cho chức năng quét hàng loạt)
+        Route::get('/get-class-list', [SyncDataController::class, 'getAllClassCodes'])->name('get_classes');
+        // API Đồng bộ tự động (Chưa dùng trong phiên bản JS hiện tại nhưng cứ để dự phòng)
+        Route::post('/sync-automated', [SyncDataController::class, 'syncAutomated'])->name('automated');
+        // check trạng thái sinh viên
+        Route::get('/get-student-list', [SyncDataController::class, 'getAllStudentCodes'])->name('get_students');
+        Route::post('/check-status', [SyncDataController::class, 'checkStudentStatus'])->name('check_status');
+    });
     
     // --- ROUTES CẤU HÌNH HỆ THỐNG ---
     // Thêm middleware 'admin' để chỉ admin mới vào được

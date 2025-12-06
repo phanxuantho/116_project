@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
 
+
 class SyncDataController extends Controller
 {
     protected $apiService;
@@ -28,7 +29,100 @@ class SyncDataController extends Controller
     {
         return view('sync_data.index');
     }
+    // 1. API: Lấy danh sách tất cả Mã Sinh Viên trong DB
+    public function getAllStudentCodes()
+    {
+        // Chỉ lấy những SV có mã hợp lệ (bỏ qua null/rỗng)
+        $codes = Student::whereNotNull('student_code')
+                        ->where('student_code', '!=', '')
+                        ->pluck('student_code');
+        return response()->json(['success' => true, 'codes' => $codes]);
+    }
 
+    // 2. API: Kiểm tra & So sánh trạng thái 1 Sinh viên
+    public function checkStudentStatus(Request $request)
+    {
+        $maSV = $request->input('ma_sv');
+        
+        try {
+            // A. Lấy dữ liệu nội bộ (Local DB) - KÈM THEO THÔNG TIN LỚP
+            $localStudent = Student::with('class')->where('student_code', $maSV)->first();
+            
+            if (!$localStudent) {
+                return response()->json(['success' => false, 'message' => "Không tìm thấy SV $maSV"]);
+            }
+            
+            // Lấy trạng thái local
+            $localStatus = $localStudent->status ?? $localStudent->student_status ?? '(Trống)';
+            
+            // Lấy Mã Lớp (Thêm mới)
+            $classCode = $localStudent->class ? $localStudent->class->class_code : '(Chưa phân lớp)';
+
+            // B. Gọi API Đào tạo (TTN)
+            $apiResponse = $this->apiService->getSinhVienInfo($maSV);
+            
+            $apiRecord = null;
+            if (isset($apiResponse['Data']) && is_array($apiResponse['Data']) && count($apiResponse['Data']) > 0) {
+                $apiRecord = $apiResponse['Data'][0]; 
+            } elseif (is_array($apiResponse) && count($apiResponse) > 0 && isset($apiResponse[0]['TrangThai'])) {
+                $apiRecord = $apiResponse[0]; 
+            }
+
+            if (!$apiRecord) {
+                return response()->json([
+                    'success' => true,
+                    'is_match' => false,
+                    'data' => [
+                        'ma_sv' => $maSV,
+                        'ho_ten' => $localStudent->fullname,
+                        'class_code' => $classCode, // ✅ Thêm lớp
+                        'local_status' => $localStatus,
+                        'api_status' => 'Không có dữ liệu API',
+                    ]
+                ]);
+            }
+
+            $apiStatus = $apiRecord['TrangThai'] ?? '(Trống)';
+
+            // C. SO SÁNH
+            if ($localStatus === 'Tốt nghiệp') $localStatus = 'Đã tốt nghiệp';
+            if ($localStatus === 'Bảo lưu') $localStatus = 'Tạm dừng học';
+            
+            $isMatch = mb_strtolower(trim($localStatus)) === mb_strtolower(trim($apiStatus));
+
+            return response()->json([
+                'success' => true,
+                'is_match' => $isMatch,
+                'data' => [
+                    'ma_sv' => $maSV,
+                    'ho_ten' => $localStudent->full_name,
+                    'class_code' => $classCode, // ✅ Thêm lớp trả về client
+                    'local_status' => $localStudent->status ?? $localStudent->student_status,
+                    'api_status' => $apiStatus,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    // 👇 [QUAN TRỌNG] HÀM NÀY ĐANG THIẾU, CẦN THÊM VÀO ĐỂ JS GỌI ĐƯỢC
+    public function getAllClassCodes(Request $request)
+    {
+        $query = ClassModel::query();
+
+        // Lọc: Nếu có gửi 'nam_hoc', chỉ lấy các lớp có khóa (course_year) nhỏ hơn hoặc bằng năm đó
+        if ($request->has('nam_hoc') && $request->nam_hoc) {
+            // Ví dụ: Chọn năm 2024 -> Lấy course_year 2024, 2023, 2022...
+            $query->where('course_year', '<=', $request->nam_hoc);
+        }
+
+        $codes = $query->pluck('class_code');
+        return response()->json(['success' => true, 'codes' => $codes]);
+    }
+    
+    
     // Hàm lấy dữ liệu từ API trả về JSON cho View xem trước
     public function fetchData(Request $request)
     {
@@ -130,6 +224,17 @@ class SyncDataController extends Controller
                         $studentExists = Student::where('student_code', $item['MaSV'])->exists();
                         
                         if ($studentExists) {
+                                // --- 🔥 RÀNG BUỘC: LỚP TỐT NGHIỆP ---
+                            // Tìm lớp của sinh viên này
+                            $class = ClassModel::find($student->class_id);
+                            if ($class && $class->class_status === 'Đã tốt nghiệp') {
+                                // Nếu SV không phải 'Đang học', thì BỎ QUA bản ghi này.
+                                $svStatus = $studentExists->status;
+                                if ($svStatus !== 'Đang học') {
+                                    continue; // Next qua vòng lặp, không chèn điểm
+                                }
+                            }
+
                             // 4. Update hoặc Insert vào bảng 116_academic_results
                             AcademicResult::updateOrCreate(
                                 [

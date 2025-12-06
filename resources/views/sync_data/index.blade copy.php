@@ -7,7 +7,6 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            {{-- Header --}}
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-2xl font-semibold text-gray-800">Đồng bộ dữ liệu (TTN API)</h1>
                 <div class="text-right">
@@ -25,13 +24,10 @@
                         <h3 class="font-bold text-gray-700 mb-3 pb-2 border-b text-sm uppercase">🛠️ Tham số cấu hình</h3>
                         
                         <div class="space-y-3">
-                            {{-- Mã Đơn Vị --}}
                             <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">Mã Đơn Vị / Khoa (maDV)</label>
                                 <input type="text" id="ma_dv" class="w-full rounded border-gray-300 shadow-sm focus:ring-indigo-500 text-sm" value="0800">
                             </div>
-
-                            {{-- Năm học & Học kỳ --}}
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-xs font-medium text-gray-600 mb-1">Năm Học</label>
@@ -42,28 +38,14 @@
                                     <input type="text" id="hoc_ky" class="w-full rounded border-gray-300 shadow-sm focus:ring-indigo-500 text-sm" value="1">
                                 </div>
                             </div>
-
-                            {{-- Mã Lớp --}}
                             <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">Mã Lớp (MaLop)</label>
                                 <input type="text" id="ma_lop" class="w-full rounded border-gray-300 shadow-sm focus:ring-indigo-500 text-sm" value="251011">
-                                <p class="text-[10px] text-gray-400 mt-1">*Chỉ dùng cho chức năng lấy lẻ 1 lớp</p>
+                                <p class="text-[10px] text-gray-400 mt-1">*Chỉ dùng cho chức năng lấy từng lớp</p>
                             </div>
-
-                            {{-- Mã SV --}}
                             <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">Mã Sinh Viên (MaSV)</label>
                                 <input type="text" id="ma_sv" class="w-full rounded border-gray-300 shadow-sm focus:ring-indigo-500 text-sm" value="25101005">
-                            </div>
-
-                            {{-- Độ trễ an toàn --}}
-                            <div class="pt-3 mt-3 border-t border-gray-100 bg-red-50 p-2 rounded border border-red-100">
-                                <label class="block text-xs font-bold text-red-600 mb-1">⏱️ Độ trễ (Delay) an toàn</label>
-                                <div class="flex items-center gap-2">
-                                    <input type="number" id="api_delay" class="w-full rounded border-red-300 shadow-sm focus:ring-red-500 text-sm font-bold text-red-600" value="200" min="0" step="100">
-                                    <span class="text-xs text-gray-500 whitespace-nowrap">ms</span>
-                                </div>
-                                <p class="text-[10px] text-gray-500 mt-1 italic">Thời gian nghỉ giữa các lần gọi API để tránh treo Server.</p>
                             </div>
                         </div>
                     </div>
@@ -72,17 +54,15 @@
                     <div class="bg-white shadow rounded-lg p-4 border border-gray-200 overflow-y-auto max-h-[600px]">
                         <h3 class="font-bold text-gray-700 mb-3 pb-2 border-b text-sm uppercase">🚀 Thao tác</h3>
                         
-                        {{-- Nhóm Lấy Toàn Bộ (ALL) --}}
+                        {{-- Nhóm Lấy Toàn Bộ (Mới) --}}
                         <div class="mb-4 bg-yellow-50 p-2 rounded border border-yellow-200">
-                            <p class="text-xs font-bold text-yellow-700 mb-2 uppercase">-- QUÉT TOÀN BỘ (ALL) --</p>
-                            <button onclick="fetchAllKQHT()" id="btn-fetch-all" class="w-full px-3 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 text-left text-sm font-bold shadow flex justify-between items-center transition transform hover:scale-105">
+                            <p class="text-xs font-bold text-yellow-700 mb-2 uppercase">-- TỔNG HỢP (ALL) --</p>
+                            <button onclick="fetchAllKQHT()" id="btn-fetch-all" class="w-full px-3 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 text-left text-sm font-bold shadow flex justify-between items-center transition">
                                 <span>🎓 Kết Quả Học Tập (ALL)</span>
-                                <span id="loading-percent" class="hidden text-xs bg-yellow-800 text-white px-2 py-0.5 rounded-full">0%</span>
+                                <span id="loading-percent" class="hidden text-xs bg-yellow-800 px-1 rounded">0%</span>
                             </button>
-                            <p class="text-[10px] text-yellow-600 mt-1 italic">Sẽ lấy danh sách tất cả lớp và chạy lần lượt.</p>
                         </div>
-
-
+                        {{-- Đối chiếu trạng thái sinh viên --}}
                         <div class="mb-4 bg-purple-50 p-2 rounded border border-purple-200 mt-4">
                             <p class="text-xs font-bold text-purple-700 mb-2 uppercase">-- RÀ SOÁT DỮ LIỆU --</p>
                             <button onclick="checkAllStudentStatus()" id="btn-check-status" class="w-full px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-left text-sm font-bold shadow flex justify-between items-center transition">
@@ -92,7 +72,6 @@
                             <p class="text-[10px] text-purple-600 mt-1 italic">So sánh trạng thái giữa DB Local và API.</p>
                         </div>
 
-                        {{-- Nhóm Đơn Vị --}}
                         <div class="mb-4">
                             <p class="text-xs font-bold text-gray-400 mb-2 uppercase">-- Đơn vị & Cán bộ --</p>
                             <div class="space-y-2">
@@ -111,7 +90,6 @@
                             </div>
                         </div>
 
-                        {{-- Nhóm Lớp Học Lẻ --}}
                         <div class="mb-4">
                             <p class="text-xs font-bold text-gray-400 mb-2 uppercase">-- Lớp học (Từng lớp) --</p>
                             <div class="space-y-2">
@@ -130,7 +108,6 @@
                             </div>
                         </div>
 
-                        {{-- Nhóm Sinh Viên --}}
                         <div>
                             <p class="text-xs font-bold text-gray-400 mb-2 uppercase">-- Sinh Viên --</p>
                             <button onclick="fetchData('sv_info')" class="w-full px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-left text-sm font-semibold border border-gray-300 flex justify-between items-center">
@@ -143,71 +120,56 @@
                 {{-- Cột phải: Kết quả JSON --}}
                 <div class="lg:col-span-3">
                     <div class="bg-white shadow rounded-lg border border-gray-200 h-full min-h-[600px] flex flex-col">
-                        {{-- Toolbar --}}
                         <div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-lg">
                             <h3 class="font-medium text-gray-700">Kết quả phản hồi JSON</h3>
                             
                             {{-- Nút Import --}}
-                            <button id="btn-import" onclick="importToDB()" class="hidden items-center px-4 py-2 bg-green-600 text-white text-sm font-bold rounded hover:bg-green-700 transition shadow-sm animate-pulse">
+                            <button id="btn-import" onclick="importToDB()" class="hidden items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition shadow-sm animate-pulse">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" /></svg>
                                 Import vào CSDL
                             </button>
                         </div>
                         
-                        {{-- Thông báo trạng thái --}}
                         <div id="status-msg" class="hidden px-4 py-2 text-sm"></div>
                         
-                        {{-- Log tiến trình --}}
-                        <div id="process-log" class="hidden bg-gray-50 border-b border-gray-200 p-2 text-xs font-mono text-gray-600 max-h-32 overflow-y-auto"></div>
+                        {{-- Log process --}}
+                        <div id="process-log" class="hidden bg-yellow-50 border-b border-yellow-100 p-2 text-xs font-mono text-yellow-800 max-h-20 overflow-y-auto"></div>
 
-                        {{-- Viewer JSON --}}
                         <div class="flex-1 p-4 overflow-auto bg-slate-900 text-green-400 font-mono text-xs relative rounded-b-lg">
-                            {{-- Loading Overlay --}}
                             <div id="loading" class="hidden absolute inset-0 flex items-center justify-center bg-slate-900/80 z-10">
                                 <div class="text-center">
                                     <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-green-500 mx-auto mb-2"></div>
-                                    <span id="loading-text" class="text-white font-bold">Đang xử lý...</span>
+                                    <span id="loading-text" class="text-white font-bold">Đang tải...</span>
                                 </div>
                             </div>
                             <pre id="json-viewer">Vui lòng cấu hình tham số và chọn chức năng...</pre>
                         </div>
 
+
                         {{-- Khu vực hiển thị kết quả Rà soát --}}
                         <div id="mismatch-container" class="hidden mt-4 bg-white border-t border-gray-200">
                             <div class="px-4 py-2 bg-red-50 border-b border-red-100 flex justify-between items-center">
-                                <div class="flex items-center gap-2">
-                                    <h3 class="font-bold text-red-700 text-sm">⚠️ Danh sách lệch trạng thái (<span id="mismatch-count">0</span>)</h3>
-                                    
-                                    {{-- NÚT XUẤT EXCEL MỚI --}}
-                                    <button onclick="exportMismatchToExcel()" class="ml-4 flex items-center px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                        </svg>
-                                        Xuất Excel
-                                    </button>
-                                </div>
+                                <h3 class="font-bold text-red-700 text-sm">⚠️ Danh sách lệch trạng thái (<span id="mismatch-count">0</span>)</h3>
                                 <button onclick="clearMismatchTable()" class="text-xs text-gray-500 hover:text-red-600 underline">Xóa bảng</button>
                             </div>
-                            
                             <div class="overflow-x-auto max-h-[400px]">
-                                {{-- Thêm ID cho bảng để JS gọi --}}
-                                <table id="table-mismatch" class="w-full text-xs text-left">
-                                    <thead class="bg-gray-50 text-gray-600 font-medium border-b sticky top-0 shadow-sm">
+                                <table class="w-full text-xs text-left">
+                                    <thead class="bg-gray-50 text-gray-600 font-medium border-b">
                                         <tr>
                                             <th class="px-3 py-2">MSSV</th>
                                             <th class="px-3 py-2">Họ Tên</th>
-                                            <th class="px-3 py-2">Lớp</th> {{-- ✅ Cột Lớp Mới --}}
                                             <th class="px-3 py-2 text-blue-600">Local DB</th>
                                             <th class="px-3 py-2 text-green-600">API Đào tạo</th>
                                             <th class="px-3 py-2">Hành động</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="mismatch-tbody" class="divide-y divide-gray-100 bg-white">
-                                        {{-- Dữ liệu JS --}}
+                                    <tbody id="mismatch-tbody" class="divide-y divide-gray-100">
+                                        {{-- Dữ liệu sẽ được JS chèn vào đây --}}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
+
 
 
                     </div>
@@ -217,140 +179,10 @@
     </div>
 
     <script>
-        // Biến toàn cục để lưu dữ liệu tạm thời trước khi Import
         let currentData = null;
         let currentType = null;
 
-        /**
-         * HÀM 1: fetchAllKQHT
-         * Chức năng: Lấy danh sách tất cả lớp, chạy vòng lặp gọi API từng lớp.
-         * Có sử dụng độ trễ (Delay) để tránh quá tải Server.
-         */
-        async function fetchAllKQHT() {
-            // Lấy độ trễ từ input
-            const delayTime = parseInt(document.getElementById('api_delay').value) || 200;
-            // 👇 Lấy giá trị năm học từ ô input
-            const namHoc = document.getElementById('nam_hoc').value;
-            if (!confirm(`Hệ thống sẽ quét TẤT CẢ các lớp để lấy Kết quả học tập.\n\n- Độ trễ mỗi request: ${delayTime}ms.\n- Quá trình này có thể mất vài phút.\n\nBạn có muốn tiếp tục?`)) return;
-
-            setupUIStart();
-            const viewer = document.getElementById('json-viewer');
-            const percentBadge = document.getElementById('loading-percent');
-            const logDiv = document.getElementById('process-log');
-            const loadingText = document.getElementById('loading-text');
-
-            percentBadge.classList.remove('hidden');
-            logDiv.classList.remove('hidden');
-            logDiv.innerHTML = "🏁 Bắt đầu lấy danh sách lớp...";
-            
-            let allResults = [];
-            
-            try {
-                // --- BƯỚC 1: LẤY DANH SÁCH MÃ LỚP (CÓ LỌC) ---
-                // 👇 CẬP NHẬT DÒNG NÀY: Truyền thêm ?nam_hoc=... vào URL
-                const url = '{{ route("sync.get_classes") }}' + '?nam_hoc=' + encodeURIComponent(namHoc);
-                // BƯỚC 1: Lấy danh sách mã lớp từ DB Local
-                const resList = await fetch(url);
-                const listData = await resList.json();
-                
-                if (!listData.success || !listData.codes) throw new Error("Không lấy được danh sách lớp.");
-                const classes = listData.codes;
-                const total = classes.length;
-                
-                logDiv.innerHTML = `✅ Tìm thấy ${total} lớp. Đang tải dữ liệu (Delay: ${delayTime}ms)...`;
-
-                // BƯỚC 2: Chạy vòng lặp qua từng lớp
-                for (let i = 0; i < total; i++) {
-                    const maLop = classes[i];
-                    
-                    // Cập nhật UI
-                    loadingText.textContent = `Đang tải lớp ${maLop} (${i+1}/${total})`;
-                    percentBadge.textContent = `${Math.round(((i+1)/total)*100)}%`;
-                    
-                    // Tạo payload
-                    const payload = {
-                        type: 'kqht_lop',
-                        ma_dv: document.getElementById('ma_dv').value,
-                        nam_hoc: document.getElementById('nam_hoc').value,
-                        hoc_ky: document.getElementById('hoc_ky').value,
-                        ma_lop: maLop,
-                        ma_sv: ''
-                    };
-
-                    try {
-                        // Gọi API
-                        const res = await fetch('{{ route("sync.fetch") }}', {
-                            method: 'POST',
-                            headers: getHeaders(),
-                            body: JSON.stringify(payload)
-                        });
-                        const json = await res.json();
-                        
-                        if (json.success) {
-                            // Chuẩn hóa dữ liệu (Nếu API trả về Object .Data)
-                            let dataItems = json.data;
-                            if (!Array.isArray(dataItems) && dataItems.Data) {
-                                dataItems = dataItems.Data;
-                            }
-                            
-                            // Nếu có dữ liệu thì gộp vào mảng tổng
-                            if (Array.isArray(dataItems) && dataItems.length > 0) {
-                                allResults = allResults.concat(dataItems);
-                                
-                                // Cập nhật Viewer để người dùng thấy tiến độ
-                                const previewData = {
-                                    Status: `Đang chạy... Đã lấy được ${allResults.length} dòng`,
-                                    Progress: `${i+1}/${total} lớp`,
-                                    CurrentClass: maLop,
-                                    LatestItems: dataItems.slice(0, 2) // Hiện 2 dòng mẫu
-                                };
-                                viewer.textContent = JSON.stringify(previewData, null, 4);
-                            }
-                        }
-                    } catch (err) {
-                        console.error(`Lỗi lớp ${maLop}:`, err);
-                        logDiv.innerHTML += `<div class="text-red-500">⚠️ Lỗi lớp ${maLop}: ${err.message}</div>`;
-                        // Auto scroll log
-                        logDiv.scrollTop = logDiv.scrollHeight;
-                    }
-                    
-                    // BƯỚC 3: Nghỉ (Delay)
-                    await new Promise(r => setTimeout(r, delayTime));
-                }
-
-                // BƯỚC 4: Hoàn tất
-                logDiv.innerHTML = `🎉 Đã hoàn tất! Tổng cộng: ${allResults.length} bản ghi.`;
-                logDiv.scrollTop = logDiv.scrollHeight;
-
-                // Gán dữ liệu vào biến global để chuẩn bị Import
-                currentData = allResults;
-                currentType = 'kqht_lop'; 
-                
-                // Hiển thị toàn bộ dữ liệu lần cuối
-                viewer.textContent = JSON.stringify(allResults, null, 4);
-                showStatus(`✅ Đã tải xong ${total} lớp. Tổng: ${allResults.length} dòng.`, 'success');
-                
-                // Hiển thị nút Import
-                const btnImport = document.getElementById('btn-import');
-                if (allResults.length > 0) {
-                    btnImport.classList.remove('hidden');
-                    btnImport.classList.add('flex');
-                } else {
-                    alert("Không tìm thấy dữ liệu kết quả học tập nào!");
-                }
-
-            } catch (error) {
-                handleError(error);
-            } finally {
-                setupUIEnd();
-                percentBadge.classList.add('hidden');
-            }
-        }
-
-        /**
-         * HÀM 2: fetchData
-         * Chức năng: Lấy dữ liệu lẻ (theo từng nút chức năng thường).
-         */
+        // --- HÀM 1: LẤY DỮ LIỆU ĐƠN LẺ ---
         async function fetchData(type) {
             setupUIStart();
             const payload = getPayload(type);
@@ -370,23 +202,119 @@
             }
         }
 
-        /**
-         * HÀM 3: importToDB
-         * Chức năng: Gửi dữ liệu JSON hiện tại xuống Server để lưu vào Database.
-         */
+        // --- HÀM 2: LẤY TOÀN BỘ DỮ LIỆU (ALL) ---
+        async function fetchAllKQHT() {
+            if (!confirm("Hệ thống sẽ quét TẤT CẢ các lớp để lấy Kết quả học tập.\nQuá trình này có thể mất thời gian. Bạn có muốn tiếp tục?")) return;
+
+            setupUIStart();
+            const viewer = document.getElementById('json-viewer');
+            const percentBadge = document.getElementById('loading-percent');
+            const logDiv = document.getElementById('process-log');
+            const loadingText = document.getElementById('loading-text');
+
+            percentBadge.classList.remove('hidden');
+            logDiv.classList.remove('hidden');
+            logDiv.innerHTML = "🏁 Bắt đầu lấy danh sách lớp...";
+            
+            let allResults = [];
+            
+            try {
+                // 1. Lấy danh sách lớp từ DB
+                const resList = await fetch('{{ route("sync.get_classes") }}');
+                const listData = await resList.json();
+                
+                if (!listData.success || !listData.codes) throw new Error("Không lấy được danh sách lớp.");
+                const classes = listData.codes;
+                const total = classes.length;
+                
+                logDiv.innerHTML = `✅ Tìm thấy ${total} lớp. Đang tải dữ liệu...`;
+
+                // 2. Vòng lặp lấy dữ liệu từng lớp
+                for (let i = 0; i < total; i++) {
+                    const maLop = classes[i];
+                    loadingText.textContent = `Đang tải lớp ${maLop} (${i+1}/${total})`;
+                    percentBadge.textContent = `${Math.round(((i+1)/total)*100)}%`;
+
+                    // Gọi API lấy dữ liệu 1 lớp (Tái sử dụng route fetch)
+                    const payload = {
+                        type: 'kqht_lop',
+                        ma_dv: document.getElementById('ma_dv').value,
+                        nam_hoc: document.getElementById('nam_hoc').value,
+                        hoc_ky: document.getElementById('hoc_ky').value,
+                        ma_lop: maLop, // Thay mã lớp trong vòng lặp
+                        ma_sv: ''
+                    };
+
+                    try {
+                        const res = await fetch('{{ route("sync.fetch") }}', {
+                            method: 'POST',
+                            headers: getHeaders(),
+                            body: JSON.stringify(payload)
+                        });
+                        const json = await res.json();
+                        
+                        if (json.success) {
+                            // Xử lý chuẩn hóa data (Bóc tách .Data nếu có)
+                            let dataItems = json.data;
+                            if (!Array.isArray(dataItems) && dataItems.Data) {
+                                dataItems = dataItems.Data;
+                            }
+                            
+                            if (Array.isArray(dataItems) && dataItems.length > 0) {
+                                // Gộp vào mảng tổng
+                                allResults = allResults.concat(dataItems);
+                                // Cập nhật Viewer liên tục để người dùng thấy dữ liệu đang chạy
+                                viewer.textContent = JSON.stringify(allResults, null, 4);
+                                // Scroll xuống dưới cùng
+                                viewer.parentElement.scrollTop = viewer.parentElement.scrollHeight;
+                            }
+                        }
+                    } catch (err) {
+                        console.error(`Lỗi lớp ${maLop}:`, err);
+                    }
+                    
+                    // Nghỉ 50ms để không đơ trình duyệt
+                    await new Promise(r => setTimeout(r, 50));
+                }
+
+                // 3. Kết thúc vòng lặp
+                logDiv.innerHTML = `🎉 Đã hoàn tất! Tổng cộng: ${allResults.length} bản ghi kết quả học tập.`;
+                
+                // Set dữ liệu vào biến toàn cục để chuẩn bị Import
+                currentData = allResults;
+                currentType = 'kqht_lop'; // Vẫn dùng type này để Controller biết cách map dữ liệu
+                
+                showStatus(`✅ Đã tải xong dữ liệu của ${total} lớp. Tổng: ${allResults.length} dòng.`, 'success');
+                
+                // Hiện nút Import
+                const btnImport = document.getElementById('btn-import');
+                if (allResults.length > 0) {
+                    btnImport.classList.remove('hidden');
+                    btnImport.classList.add('flex');
+                }
+
+            } catch (error) {
+                handleError(error);
+            } finally {
+                setupUIEnd();
+                percentBadge.classList.add('hidden');
+            }
+        }
+
+        // --- HÀM IMPORT (DÙNG CHUNG CHO CẢ 2) ---
         async function importToDB() {
             if (!currentData || !currentType) return;
             
             const btnImport = document.getElementById('btn-import');
             const originalText = btnImport.innerHTML;
             
-            if(!confirm(`Bạn sắp import ${currentData.length} bản ghi vào CSDL.\nThao tác này sẽ cập nhật điểm số nếu sinh viên đã tồn tại.\n\nBạn có chắc chắn?`)) return;
+            if(!confirm(`Bạn sắp import ${currentData.length} bản ghi vào CSDL.\nThao tác này không thể hoàn tác.`)) return;
 
             btnImport.innerHTML = '⏳ Đang lưu...';
             btnImport.disabled = true;
 
             try {
-                // Gửi request Import
+                // Tăng timeout hoặc chia nhỏ nếu dữ liệu quá lớn (tạm thời gửi 1 cục)
                 const response = await fetch('{{ route("sync.import") }}', {
                     method: 'POST',
                     headers: getHeaders(),
@@ -396,13 +324,7 @@
                 
                 if (result.success) {
                     showStatus(result.message, 'success');
-                    
-                    // Thông báo chi tiết
-                    if (result.details && result.details.errors && result.details.errors.length > 0) {
-                          alert("Đã import xong nhưng có lỗi với một số bản ghi:\n" + result.details.errors.join("\n"));
-                    } else {
-                        alert("🎉 " + result.message);
-                    }
+                    alert(result.message);
                 } else {
                     showStatus('❌ ' + result.message, 'error');
                 }
@@ -414,8 +336,7 @@
             }
         }
 
-        // --- CÁC HÀM HỖ TRỢ (HELPER) ---
-
+        // --- CÁC HÀM TIỆN ÍCH (HELPER) ---
         function getPayload(type) {
             return {
                 type: type,
@@ -435,32 +356,30 @@
             };
         }
 
-        // Reset giao diện trước khi chạy
         function setupUIStart() {
             const loading = document.getElementById('loading');
             const btnImport = document.getElementById('btn-import');
             const statusMsg = document.getElementById('status-msg');
-            const logDiv = document.getElementById('process-log');
+            const viewer = document.getElementById('json-viewer');
 
             loading.classList.remove('hidden');
             btnImport.classList.add('hidden');
             btnImport.classList.remove('flex');
             statusMsg.classList.add('hidden');
-            // Log không ẩn để người dùng xem lại nếu cần, chỉ reset nội dung trong các hàm chính
+            document.getElementById('process-log').classList.add('hidden');
+            // Không xóa viewer ngay để người dùng có thể thấy data cũ nếu muốn
         }
 
-        // Khôi phục giao diện sau khi chạy xong
         function setupUIEnd() {
             document.getElementById('loading').classList.add('hidden');
         }
 
-        // Xử lý phản hồi từ Server (cho hàm fetchData lẻ)
         function handleResponse(result, type) {
             const viewer = document.getElementById('json-viewer');
             const btnImport = document.getElementById('btn-import');
 
             if (result.success) {
-                // Chuẩn hóa dữ liệu trả về (Nếu là KQHT trả về Object có key Data)
+                // Chuẩn hóa dữ liệu trả về
                 let finalData = result.data;
                 if (!Array.isArray(finalData) && finalData.Data) {
                     finalData = finalData.Data;
@@ -473,7 +392,6 @@
                 let countInfo = Array.isArray(finalData) ? `(${finalData.length} bản ghi)` : '';
                 showStatus(`✅ ${result.message} ${countInfo}`, 'success');
 
-                // Danh sách các loại cho phép Import
                 const supportedTypes = ['units', 'lop_khoa', 'sv_lop', 'kqht_lop'];
                 if (supportedTypes.includes(type) && Array.isArray(finalData) && finalData.length > 0) {
                     btnImport.classList.remove('hidden');
@@ -510,7 +428,7 @@
             const container = document.getElementById('mismatch-container');
             const tbody = document.getElementById('mismatch-tbody');
             const countSpan = document.getElementById('mismatch-count');
-            const logDiv = document.getElementById('process-log'); 
+            const logDiv = document.getElementById('process-log'); // Tận dụng log cũ
 
             btn.disabled = true;
             btn.classList.add('opacity-50');
@@ -519,6 +437,8 @@
             logDiv.classList.remove('hidden');
             logDiv.innerHTML = "⏳ Đang lấy danh sách sinh viên...";
             
+            // Reset bảng kết quả nếu muốn (hoặc giữ lại để cộng dồn)
+            // tbody.innerHTML = ''; 
             let mismatchCount = 0;
 
             try {
@@ -550,25 +470,26 @@
                         const result = await resCheck.json();
 
                         if (result.success && !result.is_match) {
+                            // ⚠️ PHÁT HIỆN LỆCH -> Thêm vào bảng
                             mismatchCount++;
                             countSpan.textContent = parseInt(countSpan.textContent) + 1;
                             
-                            // ✅ Đã thêm cột Lớp (class_code) vào hàng
                             const row = `
                                 <tr class="hover:bg-red-50 transition">
-                                    <td class="px-3 py-2 font-mono font-bold border-r border-gray-100">${result.data.ma_sv}</td>
-                                    <td class="px-3 py-2 border-r border-gray-100">${result.data.ho_ten}</td>
-                                    <td class="px-3 py-2 font-mono text-gray-500 border-r border-gray-100">${result.data.class_code}</td>
-                                    <td class="px-3 py-2 font-bold text-blue-700 bg-blue-50 border-r border-gray-100">${result.data.local_status}</td>
-                                    <td class="px-3 py-2 font-bold text-green-700 bg-green-50 border-r border-gray-100">${result.data.api_status}</td>
-                                    <td class="px-3 py-2 text-center">
-                                        <span class="text-[10px] text-red-500">Lệch</span>
+                                    <td class="px-3 py-2 font-mono font-bold">${result.data.ma_sv}</td>
+                                    <td class="px-3 py-2">${result.data.ho_ten}</td>
+                                    <td class="px-3 py-2 font-bold text-blue-700 bg-blue-50">${result.data.local_status}</td>
+                                    <td class="px-3 py-2 font-bold text-green-700 bg-green-50">${result.data.api_status}</td>
+                                    <td class="px-3 py-2">
+                                        <button onclick="alert('Tính năng cập nhật nhanh đang phát triển')" class="text-xs bg-white border border-gray-300 px-2 py-1 rounded hover:bg-gray-100">Sửa</button>
                                     </td>
                                 </tr>
                             `;
+                            // Chèn lên đầu bảng
                             tbody.insertAdjacentHTML('afterbegin', row);
                             
-                            logDiv.innerHTML += `<div class="text-red-500 text-[10px]">⚠️ ${result.data.class_code} - ${maSV}: ${result.data.local_status} != ${result.data.api_status}</div>`;
+                            // Ghi log nhỏ
+                            logDiv.innerHTML += `<div class="text-red-500 text-[10px]">⚠️ ${maSV}: ${result.data.local_status} != ${result.data.api_status}</div>`;
                             logDiv.scrollTop = logDiv.scrollHeight;
                         }
 
@@ -576,6 +497,7 @@
                         console.error(err);
                     }
 
+                    // Delay
                     await new Promise(r => setTimeout(r, delayTime));
                 }
 
@@ -591,59 +513,12 @@
             }
         }
 
-        // === HÀM MỚI: XUẤT EXCEL TỪ HTML TABLE ===
-        function exportMismatchToExcel() {
-            const table = document.getElementById("table-mismatch");
-            const rows = table.querySelectorAll("tr");
-            
-            if (rows.length <= 1) { // Chỉ có header
-                alert("Chưa có dữ liệu lệch để xuất!");
-                return;
-            }
-
-            let csv = [];
-            // Lấy header
-            const headerRow = [];
-            const headers = table.querySelectorAll("th");
-            headers.forEach(header => {
-                // Loại bỏ cột 'Hành động' cuối cùng khi xuất excel
-                if(header.textContent.trim() !== 'Hành động') {
-                    headerRow.push('"' + header.textContent.trim() + '"');
-                }
-            });
-            csv.push(headerRow.join(","));
-
-            // Lấy dữ liệu body
-            const bodyRows = table.querySelectorAll("tbody tr");
-            bodyRows.forEach(row => {
-                const rowData = [];
-                const cols = row.querySelectorAll("td");
-                // Lặp qua các cột (trừ cột cuối cùng là nút bấm/text)
-                for(let i=0; i < cols.length - 1; i++) { 
-                    // Xử lý dữ liệu text để tránh lỗi CSV (escape dấu ngoặc kép)
-                    let text = cols[i].textContent.trim().replace(/"/g, '""'); 
-                    rowData.push('"' + text + '"');
-                }
-                csv.push(rowData.join(","));
-            });
-
-            // Tạo file download
-            const csvFile = new Blob(["\uFEFF" + csv.join("\n")], { type: "text/csv;charset=utf-8;" }); // \uFEFF để Excel nhận diện tiếng Việt UTF-8
-            const downloadLink = document.createElement("a");
-            const fileName = "Danh_sach_lech_trang_thai_" + new Date().toISOString().slice(0,10) + ".csv";
-
-            downloadLink.download = fileName;
-            downloadLink.href = window.URL.createObjectURL(csvFile);
-            downloadLink.style.display = "none";
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            document.body.removeChild(downloadLink);
-        }
-
         function clearMismatchTable() {
             document.getElementById('mismatch-tbody').innerHTML = '';
             document.getElementById('mismatch-count').textContent = '0';
         }
+
+
 
     </script>
 </x-app-layout>
