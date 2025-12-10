@@ -1,5 +1,4 @@
 <?php
-
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
@@ -151,6 +150,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/academic-warning', [AcademicWarningReportController::class, 'index'])->name('academic_warning.index');
         Route::get('/academic-warning/print', [AcademicWarningReportController::class, 'print'])->name('academic_warning.print');
         Route::get('/academic-warning/export', [AcademicWarningReportController::class, 'export'])->name('academic_warning.export');
+
+        //
 
     });
     // API SYNC ROUTES
