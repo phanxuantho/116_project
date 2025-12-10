@@ -26,8 +26,8 @@
                         </button>
                         <div x-show="open" x-transition class="absolute mt-16 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 z-50">
                             <a href="{{ route('faculties.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Quản lý Khoa</a>
-                            <a href="{{ route('majors.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Quản lý ngành</a>
-                            <a href="{{ route('classes.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Quản lý lớp</a>
+                            <a href="{{ route('majors.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Quản lý Ngành</a>
+                            <a href="{{ route('classes.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Quản lý Lớp</a>
                         </div>
                     </div>
 
@@ -98,6 +98,7 @@
                             {{-- KẾT THÚC: Menu cấp 2 --}}
 
                             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo Bộ GDĐT</a>
+                            <a href="{{ route('reports.academic_warning.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cảnh báo KQHT</a>
                             <a href="{{ route('reports.overview.form') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo tổng quan</a>
                         </div>
                     </div>

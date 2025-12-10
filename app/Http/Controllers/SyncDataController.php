@@ -221,12 +221,12 @@ class SyncDataController extends Controller
                         );
 
                         // 3. Kiểm tra Sinh viên có tồn tại không
-                        $studentExists = Student::where('student_code', $item['MaSV'])->exists();
+                        $studentExists = Student::where('student_code', $item['MaSV'])->first();
                         
                         if ($studentExists) {
                                 // --- 🔥 RÀNG BUỘC: LỚP TỐT NGHIỆP ---
                             // Tìm lớp của sinh viên này
-                            $class = ClassModel::find($student->class_id);
+                            $class = ClassModel::find($studentExists->class_id);
                             if ($class && $class->class_status === 'Đã tốt nghiệp') {
                                 // Nếu SV không phải 'Đang học', thì BỎ QUA bản ghi này.
                                 $svStatus = $studentExists->status;
@@ -249,7 +249,7 @@ class SyncDataController extends Controller
                                     'registered_credits'  => (int)$item['SoTC'],                 // SoTC
                                     
                                     // JSON không có tích lũy, tạm để 0 hoặc bằng số TC đăng ký để tránh lỗi NOT NULL
-                                    'accumulated_credits' => (int)$item['SoTC'],                 
+                                    'accumulated_credits' => (int)$item['TongTCTL'],                 
                                 ]
                             );
                             $count++;

@@ -13,7 +13,7 @@ use App\Http\Controllers\ProvinceStudentReportController;
 use App\Http\Controllers\ProvinceStudentResultReportController;
 use App\Http\Controllers\ProvinceStudentGraduationReportController;
 use App\Http\Controllers\SyncDataController;
-
+use App\Http\Controllers\AcademicWarningReportController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -147,7 +147,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/province-graduations/export', [ProvinceStudentGraduationReportController::class, 'export'])->name('province_graduations.export');
        
         
-
+        // Báo cáo Cảnh báo học tập (TK04)
+        Route::get('/academic-warning', [AcademicWarningReportController::class, 'index'])->name('academic_warning.index');
+        Route::get('/academic-warning/print', [AcademicWarningReportController::class, 'print'])->name('academic_warning.print');
+        Route::get('/academic-warning/export', [AcademicWarningReportController::class, 'export'])->name('academic_warning.export');
 
     });
     // API SYNC ROUTES
