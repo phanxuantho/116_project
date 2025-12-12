@@ -13,6 +13,7 @@ use App\Http\Controllers\ProvinceStudentResultReportController;
 use App\Http\Controllers\ProvinceStudentGraduationReportController;
 use App\Http\Controllers\SyncDataController;
 use App\Http\Controllers\AcademicWarningReportController;
+use App\Http\Controllers\AllowanceController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -154,6 +155,20 @@ Route::middleware(['auth'])->group(function () {
         //
 
     });
+
+    Route::prefix('allowances')->name('allowances.')->middleware('auth')->group(function () {
+        // 1. Cấp phát theo THÁNG
+        Route::get('/monthly/create', [AllowanceController::class, 'createMonthly'])->name('monthly.create');
+        Route::post('/monthly/preview', [AllowanceController::class, 'previewMonthly'])->name('monthly.preview'); // Bước Nháp
+        Route::post('/monthly/store', [AllowanceController::class, 'storeMonthly'])->name('monthly.store'); // Bước Duyệt/Lưu
+    
+        // 2. Cấp phát theo ĐỢT (KỲ)
+        Route::get('/semester/create', [AllowanceController::class, 'createSemester'])->name('semester.create');
+        Route::post('/semester/preview', [AllowanceController::class, 'previewSemester'])->name('semester.preview'); // Bước Nháp
+        Route::post('/semester/store', [AllowanceController::class, 'storeSemester'])->name('semester.store'); // Bước Duyệt/Lưu
+    });
+
+
     // API SYNC ROUTES
     Route::prefix('sync-data')->name('sync.')->group(function () {
         // Trang giao diện chính
