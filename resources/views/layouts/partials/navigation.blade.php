@@ -57,6 +57,7 @@
                         <div x-show="open" x-transition class="absolute mt-16 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 z-50">
                             <a href="{{ route('reports.monthly-review.form') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">In danh sách rà soát</a>
                             <a href="{{ route('allowances.monthly.create') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cấp phát kinh phí</a>
+                            <a href="{{ route('allowances.semester.create') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cấp phát kinh phí đợt</a>
                         </div>
                     </div>
 
