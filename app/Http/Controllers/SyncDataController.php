@@ -231,7 +231,7 @@ class SyncDataController extends Controller
                                 // Nếu SV không phải 'Đang học', thì BỎ QUA bản ghi này.
                                 $svStatus = $studentExists->status;
                                 if ($svStatus !== 'Đang học') {
-                                    continue; // Next qua vòng lặp, không chèn điểm
+                                   continue; // Next qua vòng lặp, không chèn điểm
                                 }
                             }
 

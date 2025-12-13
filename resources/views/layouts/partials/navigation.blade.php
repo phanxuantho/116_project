@@ -42,7 +42,6 @@
                         <div x-show="open" x-transition class="absolute mt-16 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 z-50">
                             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Thêm mới sinh viên</a>
                             <a href="{{ route('students.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cập nhật thông tin</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cập nhật trạng thái</a>
                         </div>
                     </div>
 
@@ -55,9 +54,8 @@
                             </svg>
                         </button>
                         <div x-show="open" x-transition class="absolute mt-16 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 z-50">
-                            <a href="{{ route('reports.monthly-review.form') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">In danh sách rà soát</a>
-                            <a href="{{ route('allowances.monthly.create') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cấp phát kinh phí</a>
-                            <a href="{{ route('allowances.semester.create') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cấp phát kinh phí đợt</a>
+                            <a href="{{ route('allowances.monthly.create') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cấp phát theo tháng</a>
+                            <a href="{{ route('allowances.semester.create') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cấp phát theo đợt</a>
                         </div>
                     </div>
 
@@ -73,8 +71,8 @@
 
                         {{-- Menu cấp 1 --}}
                         <div x-show="open" x-transition class="absolute mt-16 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 z-50">
-                            <a href="{{ route('students.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo rà soát hàng tháng</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo họp định kì</a>
+                            <a href="{{ route('reports.monthly-review.form') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo rà soát hàng tháng</a>
+                            <a href="{{ route('reports.overview.form') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo họp định kì</a>
 
                             {{-- BẮT ĐẦU: Menu cấp 2 (Báo cáo các địa phương) --}}
                             <div x-data="{ subOpen: false }" @click.away="subOpen = false" class="relative group">
@@ -100,7 +98,7 @@
 
                             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo Bộ GDĐT</a>
                             <a href="{{ route('reports.academic_warning.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cảnh báo KQHT</a>
-                            <a href="{{ route('reports.overview.form') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo tổng quan</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo tình hình việc làm</a>
                         </div>
                     </div>
 
