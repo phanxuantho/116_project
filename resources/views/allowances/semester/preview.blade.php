@@ -57,9 +57,12 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($students as $index => $st)
+                            {{-- Sửa: Bỏ $index =>, chỉ cần $st --}}
+                            @forelse($students as $st)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-4 py-2 text-sm text-gray-500">{{ $index + 1 }}</td>
+                                {{-- SỬA LỖI: Dùng $loop->iteration thay vì $index + 1 --}}
+                                <td class="px-4 py-2 text-sm text-gray-500">{{ $loop->iteration }}</td>
+                                
                                 <td class="px-4 py-2 text-sm font-medium text-gray-900">{{ $st->student_code }}</td>
                                 <td class="px-4 py-2 text-sm text-gray-700">{{ $st->full_name }}</td>
                                 <td class="px-4 py-2 text-sm text-gray-500">{{ $st->class->class_name }}</td>

@@ -33,9 +33,9 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($students as $index => $st)
+                            @foreach($students as $st)
                             <tr>
-                                <td class="px-4 py-2">{{ $index + 1 }}</td>
+                                <td class="px-4 py-2">{{ $loop->iteration }}</td>
                                 <td class="px-4 py-2">{{ $st->student_code }}</td>
                                 <td class="px-4 py-2">{{ $st->full_name }}</td>
                                 <td class="px-4 py-2">{{ $st->class->class_name }}</td>

@@ -35,7 +35,7 @@ class AcademicWarningReportController extends Controller
             $classes = ClassModel::where('faculty_id', $request->faculty_id)->orderBy('class_name')->get();
         }
 
-        $statuses = ['Đang học', 'Bảo lưu', 'Thôi học', 'Gia hạn'];
+        $statuses = ['Đang học', 'Bảo lưu', 'Tốt nghiệp', 'Thôi học'];
 
         // 2. Xử lý tìm kiếm (nếu có request)
         $students = collect();

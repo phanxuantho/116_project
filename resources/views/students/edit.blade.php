@@ -147,6 +147,7 @@
                                     <option value="Đang nhận" {{ old('funding_status', $student->funding_status) == 'Đang nhận' ? 'selected' : '' }}>Đang nhận</option>
                                     <option value="Tạm dừng nhận" {{ old('funding_status', $student->funding_status) == 'Tạm dừng nhận' ? 'selected' : '' }}>Tạm dừng nhận</option>
                                     <option value="Thôi nhận" {{ old('funding_status', $student->funding_status) == 'Thôi nhận' ? 'selected' : '' }}>Thôi nhận</option>
+                                    <option value="Gia hạn" {{ old('funding_status', $student->funding_status) == 'Gia hạn' ? 'selected' : '' }}>Gia hạn</option>
                                 </select>
                             </div>
                         </div>

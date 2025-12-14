@@ -56,6 +56,7 @@
                         <div x-show="open" x-transition class="absolute mt-16 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 z-50">
                             <a href="{{ route('allowances.monthly.create') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cấp phát theo tháng</a>
                             <a href="{{ route('allowances.semester.create') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cấp phát theo đợt</a>
+                            <a href="{{ route('allowances.statistics.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Thống kê cấp phát</a>
                         </div>
                     </div>
 

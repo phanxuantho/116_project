@@ -33,6 +33,7 @@ class AllowanceController extends Controller
         // Validate dữ liệu đầu vào
         $request->validate([
             'amount' => 'required|numeric|min:0',
+            'status' => 'required|in:Đã chi trả,Chưa chi trả', // <--- Thêm dòng này
             'payment_month' => 'required|integer',
             'payment_year' => 'required|integer',
             'school_year_id' => 'required',
@@ -56,32 +57,37 @@ class AllowanceController extends Controller
      */
     public function storeMonthly(Request $request)
     {
-        // Nhận dữ liệu đã được duyệt từ form Preview (được gửi qua hidden input)
-        $data = json_decode($request->input('data'), true); // Mảng danh sách SV và số tiền
-        $meta = json_decode($request->input('meta'), true); // Thông tin chung (tháng, năm...)
+        // Nhận dữ liệu đã được duyệt từ form Preview
+        $data = json_decode($request->input('data'), true); 
+        $meta = json_decode($request->input('meta'), true); 
 
         DB::beginTransaction();
         try {
             $count = 0;
             foreach ($data as $item) {
-                // Kiểm tra trùng lặp: Nếu SV đã được cấp tháng này rồi thì bỏ qua hoặc cập nhật
-                // Ở đây ta chọn cách: Tạo mới (nếu muốn tránh trùng lặp phải check exists)
+                // Sử dụng updateOrCreate để tránh trùng lặp
+                // Tham số 1: Điều kiện tìm kiếm (Unique key)
+                // Tham số 2: Dữ liệu cần lưu/cập nhật
                 
-                MonthlyAllowance::create([
-                    'student_code' => $item['student_code'],
-                    'school_year_id' => $meta['school_year_id'],
-                    'semester_id' => $meta['semester_id'],
-                    'payment_month' => $meta['payment_month'],
-                    'payment_year' => $meta['payment_year'],
-                    'amount' => $meta['amount'],
-                    'status' => 'Chưa chi trả', // Mặc định khi mới tạo
-                    'note' => $meta['note'] ?? null,
-                ]);
+                MonthlyAllowance::updateOrCreate(
+                    [
+                        'student_code'   => $item['student_code'],
+                        'payment_month'  => $meta['payment_month'],
+                        'payment_year'   => $meta['payment_year'],
+                    ],
+                    [
+                        'school_year_id' => $meta['school_year_id'],
+                        'semester_id'    => $meta['semester_id'],
+                        'amount'         => $meta['amount'],
+                        'status'         => $meta['status'],
+                        'note'           => $meta['note'] ?? null,
+                    ]
+                );
                 $count++;
             }
             DB::commit();
             return redirect()->route('allowances.monthly.create')
-                ->with('success', "Đã phê duyệt và cấp phát thành công cho $count sinh viên.");
+                ->with('success', "Đã phê duyệt (cập nhật/thêm mới) thành công cho $count sinh viên.");
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Lỗi: ' . $e->getMessage());
@@ -103,6 +109,7 @@ class AllowanceController extends Controller
     {
         $request->validate([
             'amount' => 'required|numeric|min:0',
+            'status' => 'required|in:Đã chi trả,Chưa chi trả',
             'semester_id' => 'required',
             'installment_number' => 'required|integer',
             'months_covered' => 'required|numeric',
@@ -127,27 +134,32 @@ class AllowanceController extends Controller
         try {
             $count = 0;
             foreach ($data as $item) {
-                SemesterAllowance::create([
-                    'student_code' => $item['student_code'],
-                    'semester_id' => $meta['semester_id'],
-                    'installment_number' => $meta['installment_number'],
-                    'months_covered' => $meta['months_covered'],
-                    'start_month' => $meta['start_month'] ?? null,
-                    'amount' => $meta['amount'],
-                    'status' => 'Chưa chi trả',
-                    'note' => $meta['note'] ?? null,
-                ]);
+                // Sử dụng updateOrCreate để tránh trùng lặp
+                
+                SemesterAllowance::updateOrCreate(
+                    [
+                        'student_code'       => $item['student_code'],
+                        'semester_id'        => $meta['semester_id'],
+                        'installment_number' => $meta['installment_number'],
+                    ],
+                    [
+                        'months_covered' => $meta['months_covered'],
+                        'start_month'    => $meta['start_month'] ?? null,
+                        'amount'         => $meta['amount'],
+                        'status'         => $meta['status'],
+                        'note'           => $meta['note'] ?? null,
+                    ]
+                );
                 $count++;
             }
             DB::commit();
             return redirect()->route('allowances.semester.create')
-                ->with('success', "Đã phê duyệt và cấp phát theo đợt thành công cho $count sinh viên.");
+                ->with('success', "Đã phê duyệt (cập nhật/thêm mới) theo đợt thành công cho $count sinh viên.");
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Lỗi: ' . $e->getMessage());
         }
     }
-
     // =========================================================================
     // LOGIC LỌC SINH VIÊN (Dùng chung)
     // =========================================================================
@@ -176,7 +188,8 @@ class AllowanceController extends Controller
         if ($graduatedClassIds->isNotEmpty()) {
             $graduatedStudents = Student::with('class')
                 ->whereIn('class_id', $graduatedClassIds)
-                ->where('status', 'Gia hạn')
+                ->where('funding_status', 'Gia hạn')
+                ->where('status', 'Đang học')
                 ->get();
             $students = $students->merge($graduatedStudents);
         }

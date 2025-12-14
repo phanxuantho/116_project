@@ -67,9 +67,7 @@ class ProvinceStudentResultReportController extends Controller
         $currentRow = 1;
 
         foreach ($data as $provinceName => $students) {
-            // ... (Phần Header giống TK01, chỉ đổi Tiêu đề) ...
-            $startHeaderRow = $currentRow;
-            
+            // Header Quốc Hiệu
             $sheet->mergeCells("A{$currentRow}:D{$currentRow}")->setCellValue("A{$currentRow}", 'BỘ GIÁO DỤC VÀ ĐÀO TẠO');
             $sheet->mergeCells("E{$currentRow}:K{$currentRow}")->setCellValue("E{$currentRow}", 'CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM');
             $sheet->getStyle("A{$currentRow}:K{$currentRow}")->getFont()->setBold(true);
@@ -83,7 +81,7 @@ class ProvinceStudentResultReportController extends Controller
             $sheet->getStyle("A{$currentRow}:K{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             $currentRow += 2;
 
-            // Tiêu đề TK02
+            // Tiêu đề
             $title = "KẾT QUẢ HỌC TẬP VÀ RÈN LUYỆN HỌC KỲ {$meta['semester']} NĂM HỌC {$meta['year_name']}";
             $sheet->mergeCells("A{$currentRow}:K{$currentRow}")->setCellValue("A{$currentRow}", $title);
             $sheet->getStyle("A{$currentRow}")->getFont()->setBold(true)->setSize(14);
@@ -94,7 +92,7 @@ class ProvinceStudentResultReportController extends Controller
             $sheet->mergeCells("A{$currentRow}:K{$currentRow}")->setCellValue("A{$currentRow}", $subTitle);
             $sheet->getStyle("A{$currentRow}")->getFont()->setBold(true)->setSize(14);
             $sheet->getStyle("A{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setWrapText(true);
-            $sheet->getRowDimension($currentRow)->setRowHeight(40); // Tăng chiều cao vì tiêu đề dài
+            $sheet->getRowDimension($currentRow)->setRowHeight(40);
             $currentRow += 2;
 
             // Header Bảng
@@ -114,8 +112,6 @@ class ProvinceStudentResultReportController extends Controller
             // Dữ liệu
             $stt = 1;
             foreach ($students as $student) {
-                // Lấy điểm từ relation đã eager load
-                // academicResults là collection, ta lấy bản ghi đầu tiên khớp (vì đã filter trong query chính)
                 $result = $student->academicResults->first(); 
 
                 $sheet->setCellValue("A{$currentRow}", $stt++);
@@ -125,12 +121,11 @@ class ProvinceStudentResultReportController extends Controller
                 $classInfo = ($student->class->class_name ?? '') . "\n(" . ($student->class->course_year ?? '') . ")";
                 $sheet->setCellValue("D{$currentRow}", $classInfo);
                 
-                // Điểm
                 $sheet->setCellValue("E{$currentRow}", $result ? $result->academic_score : '');
                 $sheet->setCellValue("F{$currentRow}", $result ? $result->conduct_score : '');
 
                 $address = ($student->address_detail ?? '') . ' - ' . ($student->ward->name ?? '');
-                $sheet->setCellValue("F{$currentRow}", $address);
+                $sheet->setCellValue("G{$currentRow}", $address);
                 $sheet->setCellValue("H{$currentRow}", $provinceName);
                 $sheet->setCellValueExplicit("I{$currentRow}", $student->citizen_id_card, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
                 $sheet->setCellValueExplicit("J{$currentRow}", $student->phone, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
@@ -188,13 +183,13 @@ class ProvinceStudentResultReportController extends Controller
     {
         $schoolYear = SchoolYear::find($request->school_year_id);
         return [
-            'year_name' => $schoolYear ? $schoolYear->name : '', // VD: 2024-2025
+            'year_name' => $schoolYear ? $schoolYear->name : '', 
             'semester' => $request->semester,
         ];
     }
 
     /**
-     * LOGIC LẤY DỮ LIỆU CỐT LÕI
+     * LOGIC LẤY DỮ LIỆU CỐT LÕI (ĐÃ CẬP NHẬT THEO STATUS MỚI)
      */
     private function getReportData(Request $request)
     {
@@ -202,74 +197,41 @@ class ProvinceStudentResultReportController extends Controller
         $semesterNum = $request->semester;
         $provinceCode = $request->province_code;
 
-        // 1. Tìm ID học kỳ trong CSDL dựa trên năm học và số học kỳ
         $semesterDb = Semester::where('school_year_id', $schoolYearId)
                               ->where('semester_number', $semesterNum)
                               ->first();
         
         if (!$semesterDb) {
-            return collect(); // Trả về rỗng nếu không thấy kỳ
+            return collect(); 
         }
-
-        // Lấy thông tin năm học để so sánh logic "lớp ra trường"
-        // Giả sử bảng SchoolYear có cột 'start_year' (int) hoặc parse từ tên
-        // Ở đây giả định ta lấy năm bắt đầu từ bảng school_years để so sánh
-        $selectedSchoolYear = SchoolYear::find($schoolYearId);
-        // Logic đơn giản: Lớp có 'course_year' <= Năm của kỳ báo cáo
-        // Và xử lý logic Status
 
         $query = Student::query()
             ->with(['class', 'province', 'ward'])
-            // Eager load điểm thi CỦA ĐÚNG KỲ ĐÓ
+            // Eager load điểm thi của đúng kỳ đó
             ->with(['academicResults' => function($q) use ($semesterDb) {
                 $q->where('semester_id', $semesterDb->id);
             }])
-             //Chỉ lấy SV có điểm trong kỳ đó (tức là có học)
+            // Chỉ lấy SV có điểm trong kỳ (để tránh lấy rác)
             ->whereHas('academicResults', function($q) use ($semesterDb) {
                 $q->where('semester_id', $semesterDb->id);
             });
 
-        // --- LOGIC LỌC THEO YÊU CẦU ---
-        // "Chọn năm học thì chỉ xuất những lớp từ năm đó trở về trước"
-        // "Nếu lớp đã ra trường thì chỉ xuất những sinh viên có status = Gia hạn"
-        
-        // Ta cần check từng sinh viên hoặc dùng whereHas class phức tạp.
-        // Cách tốt nhất: Lọc Class trước
-        $query->whereHas('class', function($q) use ($selectedSchoolYear) {
-            // Giả sử 'course_year' là năm bắt đầu khóa học (2021, 2022...)
-            // Cần so sánh với năm của School Year được chọn.
-            // Ví dụ: Năm học 2024-2025 => Lấy K2024, K2023, K2022...
-            // $startYearOfReport = substr($selectedSchoolYear->name, 0, 4); // VD: 2024
-            // $q->where('course_year', '<=', $startYearOfReport);
-            
-            // TUY NHIÊN, yêu cầu về "Lớp đã ra trường" phức tạp hơn.
-            // Ta sẽ xử lý logic này bằng cách nhóm điều kiện OR:
-            
-            $q->where(function($classQuery) {
-                // Nhóm 1: Lớp Đang học (Lấy hết)
-                $classQuery->where('class_status', 'Đang học')
-                           ->orWhere(function($subQ) {
-                                // Nhóm 2: Lớp Đã tốt nghiệp nhưng SV phải là Gia hạn
-                                // Lưu ý: Điều kiện SV status phải viết ở query ngoài, 
-                                // ở đây ta chỉ filter Class thôi thì chưa đủ.
-                                // Nên ta sẽ filter Class chung chung trước.
-                                $subQ->where('class_status', 'Đã tốt nghiệp');
-                           });
-            });
-        });
-
-        // Áp dụng logic Status Sinh viên
+        // --- LOGIC LỌC MỚI DỰA TRÊN YÊU CẦU ---
         $query->where(function($q) {
-            // Trường hợp 1: Lớp Đang học => Lấy SV Đang học, Bảo lưu... (Thường là Đang học)
+            // Trường hợp 1: Lớp Đang học -> Lấy SV 'Đang học' và Funding 'Đang nhận'
             $q->whereHas('class', function($c) {
                 $c->where('class_status', 'Đang học');
-            })->whereIn('status', ['Đang học', 'Gia hạn']); // Lấy các trạng thái active
+            })
+            ->where('status', 'Đang học')
+            ->where('funding_status', 'Đang nhận');
 
-            // Trường hợp 2: Lớp Đã tốt nghiệp => CHỈ LẤY SV GIA HẠN
+            // Trường hợp 2: Lớp Đã tốt nghiệp -> Lấy SV vẫn 'Đang học' (nợ môn, chưa tốt nghiệp hẳn) nhưng Funding 'Gia hạn'
             $q->orWhere(function($sq) {
                 $sq->whereHas('class', function($c) {
                     $c->where('class_status', 'Đã tốt nghiệp');
-                })->where('status', 'Gia hạn'); // BẮT BUỘC
+                })
+                ->where('status', 'Đang học')        // Vẫn phải đang học mới có điểm
+                ->where('funding_status', 'Gia hạn'); // Quan trọng: Trạng thái cấp tiền là Gia hạn
             });
         });
 

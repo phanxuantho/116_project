@@ -14,6 +14,8 @@ use App\Http\Controllers\ProvinceStudentGraduationReportController;
 use App\Http\Controllers\SyncDataController;
 use App\Http\Controllers\AcademicWarningReportController;
 use App\Http\Controllers\AllowanceController;
+use App\Http\Controllers\AllowanceStatisticController;
+use App\Http\Controllers\PublicGraduationLookupController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,7 +27,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
-
+// Route tra cứu công khai (Không cần đăng nhập)
+Route::get('/tra-cuu-tot-nghiep', [PublicGraduationLookupController::class, 'index'])->name('public.graduation.lookup');
 // Các route công khai (không cần đăng nhập)
 // Route::get('/about', ...);
 
@@ -166,6 +169,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/semester/create', [AllowanceController::class, 'createSemester'])->name('semester.create');
         Route::post('/semester/preview', [AllowanceController::class, 'previewSemester'])->name('semester.preview'); // Bước Nháp
         Route::post('/semester/store', [AllowanceController::class, 'storeSemester'])->name('semester.store'); // Bước Duyệt/Lưu
+
+        Route::get('/statistics', [AllowanceStatisticController::class, 'index'])->name('statistics.index');
+        Route::get('/statistics/detail', [AllowanceStatisticController::class, 'show'])->name('statistics.show');
     });
 
 
