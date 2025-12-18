@@ -16,6 +16,7 @@ use App\Http\Controllers\AcademicWarningReportController;
 use App\Http\Controllers\AllowanceController;
 use App\Http\Controllers\AllowanceStatisticController;
 use App\Http\Controllers\PublicGraduationLookupController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -27,6 +28,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
+
 // Route tra cứu công khai (Không cần đăng nhập)
 Route::get('/tra-cuu-tot-nghiep', [PublicGraduationLookupController::class, 'index'])->name('public.graduation.lookup');
 // Các route công khai (không cần đăng nhập)
@@ -68,9 +74,9 @@ Route::prefix('graduate-employment')->name('graduate.employment.')->group(functi
 // Các route cần xác thực (phải đăng nhập)
 Route::middleware(['auth'])->group(function () {
     // Route dashboard mặc định của Breeze
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    //Route::get('/dashboard', function () {
+    //    return view('dashboard');
+    //})->name('dashboard');
 
     
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
