@@ -24,9 +24,10 @@ class GraduateEmploymentController extends Controller
         if (!Setting::getValue('enable_graduate_form', true)) { 
              
             // Nếu cấu hình là 'OFF', quay lại trang trước với thông báo lỗi
-            return redirect()->back()->withErrors([
-                'message' => 'Chức năng khai báo việc làm hiện đang tạm đóng. Vui lòng quay lại sau.'
-            ]);
+            //return redirect()->back()->withErrors([
+             //   'message' => 'Chức năng khai báo việc làm hiện đang tạm đóng. Vui lòng quay lại sau.'
+            //]);
+            return response()->view('errors.locked', [], 503);
        }
        // =============================================
         

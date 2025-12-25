@@ -20,8 +20,9 @@ class StudentPublicProfileController extends Controller
  
         // Kiểm tra cấu hình có bật form không
          if (!Setting::getValue('enable_student_update_form', true)) {
-            return redirect()->route('student.update.verify')
-                   ->withErrors(['message' => 'Chức năng cập nhật thông tin hiện đang tạm đóng.']);
+            //return redirect()->route('student.update.verify')
+            //      ->withErrors(['message' => 'Chức năng cập nhật thông tin hiện đang tạm đóng.']);
+            return response()->view('errors.locked', [], 503);
         }
         return view('student_update.verify');
     }
