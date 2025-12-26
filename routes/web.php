@@ -17,6 +17,7 @@ use App\Http\Controllers\AllowanceController;
 use App\Http\Controllers\AllowanceStatisticController;
 use App\Http\Controllers\PublicGraduationLookupController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GraduateStatisticController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -161,7 +162,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/academic-warning/print', [AcademicWarningReportController::class, 'print'])->name('academic_warning.print');
         Route::get('/academic-warning/export', [AcademicWarningReportController::class, 'export'])->name('academic_warning.export');
 
-        //
+        //Báo cáo sinh viên tốt nghiệp có việc làm
+        Route::get('/graduate/employment', [GraduateStatisticController::class, 'index'])
+        ->name('graduate.employment');
+        Route::get('/graduate/export', [GraduateStatisticController::class, 'export'])
+        ->name('graduate.export');
 
     });
 

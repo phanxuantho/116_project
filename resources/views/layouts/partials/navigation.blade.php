@@ -99,7 +99,7 @@
 
                             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo Bộ GDĐT</a>
                             <a href="{{ route('reports.academic_warning.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cảnh báo KQHT</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo tình hình việc làm</a>
+                            <a href="{{ route('reports.graduate.employment') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Báo cáo tình hình việc làm</a>
                         </div>
                     </div>
 

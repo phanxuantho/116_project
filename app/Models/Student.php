@@ -76,4 +76,9 @@ class Student extends Model
         // 'student_code' là khóa liên kết
         return $this->hasOne(Graduation::class, 'student_code', 'student_code');
     }
+    public function employment()
+    {
+        // student_code ở bảng này liên kết với student_code ở bảng GraduateEmployment
+        return $this->hasOne(GraduateEmployment::class, 'student_code', 'student_code');
+    }
 }
