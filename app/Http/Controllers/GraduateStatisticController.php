@@ -15,10 +15,8 @@ class GraduateStatisticController extends Controller
     public function index(Request $request)
     {
         // 1. Dữ liệu cho bộ lọc
-        // Lấy danh sách Khóa học (course_year) từ bảng Classes
         $courses = ClassModel::select('course_year')->distinct()->orderBy('course_year', 'desc')->pluck('course_year');
         
-        // Lấy danh sách Lớp (nếu đã chọn Khóa thì chỉ hiện lớp của khóa đó)
         $classesQuery = ClassModel::orderBy('class_name');
         if ($request->course_year) {
             $classesQuery->where('course_year', $request->course_year);
@@ -26,33 +24,30 @@ class GraduateStatisticController extends Controller
         $classes = $classesQuery->get();
 
         // 2. Xử lý Logic Lọc Dữ liệu
-        $statusFilter = $request->input('status', 'Đã có việc làm'); // Mặc định
+        $statusFilter = $request->input('status', 'Đã có việc làm'); 
         
-        // Query cơ bản lấy sinh viên ĐÃ TỐT NGHIỆP hoặc lớp ĐÃ TỐT NGHIỆP
+        // --- CẬP NHẬT 1: Thêm điều kiện status = 'Tốt nghiệp' ---
         $query = Student::query()
             ->with(['class', 'employment', 'employment.teachingProvince'])
+            ->where('status', 'Tốt nghiệp') // <--- CHỈ LẤY SV ĐÃ TỐT NGHIỆP
             ->whereHas('class', function($q) use ($request) {
-                // Điều kiện lớp đã tốt nghiệp (quan trọng)
+                // Vẫn giữ điều kiện lớp đã tốt nghiệp
                 $q->where('class_status', 'Đã tốt nghiệp');
                 
-                // Lọc theo khóa
                 if ($request->course_year) {
                     $q->where('course_year', $request->course_year);
                 }
-                // Lọc theo lớp cụ thể
                 if ($request->class_id) {
                     $q->where('id', $request->class_id);
                 }
             });
 
-        // Áp dụng bộ lọc Tình trạng
+        // Áp dụng bộ lọc Tình trạng việc làm
         if ($statusFilter === 'Chưa khai báo') {
-            // Lấy SV không có bản ghi trong bảng việc làm
             $query->doesntHave('employment');
         } else {
-            // Lấy SV CÓ bản ghi và khớp trạng thái
             $query->whereHas('employment', function($q) use ($statusFilter) {
-                if ($statusFilter !== 'Tất cả') { // Nếu muốn xem hết thì bỏ qua where
+                if ($statusFilter !== 'Tất cả') {
                     $q->where('employment_status', $statusFilter);
                 }
             });
@@ -60,26 +55,26 @@ class GraduateStatisticController extends Controller
 
         $students = $query->paginate(20)->withQueryString();
 
-        // 3. Thống kê tổng quan cho biểu đồ (Dựa trên bộ lọc khóa/lớp hiện tại)
-        // Cần query riêng để đếm toàn bộ, không phân trang
-        $statsQuery = Student::whereHas('class', function($q) use ($request) {
-            $q->where('class_status', 'Đã tốt nghiệp');
-            if ($request->course_year) $q->where('course_year', $request->course_year);
-            if ($request->class_id) $q->where('id', $request->class_id);
-        });
+        // 3. Thống kê tổng quan cho biểu đồ
+        // --- CẬP NHẬT 2: Thêm điều kiện status = 'Tốt nghiệp' cho query thống kê ---
+        $statsQuery = Student::query()
+            ->where('status', 'Tốt nghiệp') // <--- QUAN TRỌNG: Để đếm đúng tổng số
+            ->whereHas('class', function($q) use ($request) {
+                $q->where('class_status', 'Đã tốt nghiệp');
+                if ($request->course_year) $q->where('course_year', $request->course_year);
+                if ($request->class_id) $q->where('id', $request->class_id);
+            });
         
         $totalGraduates = $statsQuery->count();
         $declaredCount = (clone $statsQuery)->has('employment')->count();
         $notDeclaredCount = $totalGraduates - $declaredCount;
         
-        // Thống kê chi tiết trạng thái việc làm
         $employmentStats = GraduateEmployment::select('employment_status', DB::raw('count(*) as total'))
             ->whereIn('student_code', (clone $statsQuery)->select('student_code'))
             ->groupBy('employment_status')
             ->pluck('total', 'employment_status')
             ->toArray();
         
-        // Merge thêm 'Chưa khai báo' vào mảng thống kê để vẽ biểu đồ
         $chartData = $employmentStats;
         $chartData['Chưa khai báo'] = $notDeclaredCount;
 
@@ -88,11 +83,12 @@ class GraduateStatisticController extends Controller
 
     public function export(Request $request)
     {
-        // Logic lọc y hệt hàm index nhưng dùng get() thay vì paginate()
         $statusFilter = $request->input('status', 'Đã có việc làm');
         
+        // --- CẬP NHẬT 3: Thêm điều kiện status = 'Tốt nghiệp' cho query Excel ---
         $query = Student::query()
             ->with(['class', 'employment'])
+            ->where('status', 'Tốt nghiệp') // <--- LỌC SV ĐÃ TỐT NGHIỆP
             ->whereHas('class', function($q) use ($request) {
                 $q->where('class_status', 'Đã tốt nghiệp');
                 if ($request->course_year) $q->where('course_year', $request->course_year);
@@ -109,11 +105,10 @@ class GraduateStatisticController extends Controller
         
         $students = $query->get();
 
-        // --- XỬ LÝ EXCEL ---
+        // --- XỬ LÝ EXCEL (Giữ nguyên phần dưới) ---
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         
-        // Header
         $headers = ['STT', 'MSSV', 'Họ tên', 'Lớp', 'Tình trạng', 'Nơi làm việc', 'Vị trí', 'Loại hình', 'SĐT Liên hệ'];
         $col = 'A';
         foreach ($headers as $header) {
@@ -138,7 +133,6 @@ class GraduateStatisticController extends Controller
             } else {
                 $sheet->setCellValue('E' . $row, 'Chưa khai báo');
                 $sheet->setCellValue('F' . $row, '-');
-                // ...
             }
             $row++;
         }
