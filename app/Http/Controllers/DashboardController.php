@@ -36,7 +36,8 @@ class DashboardController extends Controller
         ];
 
         if ($latestSemester) {
-            $scores = AcademicResult::where('semester_id', $latestSemester->id)->pluck('academic_score');
+            //$scores = AcademicResult::where('semester_id', $latestSemester->id)->pluck('academic_score');
+            $scores = AcademicResult::where('semester_id', 8)->pluck('academic_score');
             foreach ($scores as $score) {
                 if ($score < 2.0) $academicStats['Yếu/Kém']++;
                 elseif ($score < 2.5) $academicStats['Trung bình']++;
